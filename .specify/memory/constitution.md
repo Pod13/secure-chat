@@ -1,15 +1,19 @@
 <!--
 Sync Impact Report
-- Version change: (unfilled template) → 1.0.0
-- Modified principles: none renamed (previous file contained only template placeholders)
-- Added principles: I–XII (all new)
-- Added sections: Security Requirements & Constraints, Development Workflow & Quality Gates, Governance
+- Version change: 1.0.0 → 1.1.0
+- Modified principles: IX (cross-reference to XIII only); none weakened or removed
+- Added principles: XIII. Simplicity and Verifiability
+- Added/changed sections: Development Workflow & Quality Gates (plan gate 10, tasks and review
+  simplicity items); Governance (simplicity never overrides I–XII)
 - Removed sections: none
+- Bump rationale: MINOR — new principle and materially expanded workflow guidance
 - Templates requiring updates (NOT modified by this command; follow-up needed):
-  ⚠ .specify/templates/plan-template.md — Constitution Check must list Principles I–XII as gates
+  ⚠ .specify/templates/plan-template.md — Constitution Check must list Principles I–XIII as gates
   ⚠ .specify/templates/spec-template.md — security & privacy requirements section must be mandatory
-  ⚠ .specify/templates/tasks-template.md — every feature must include threat-model, security-test and review tasks
+  ⚠ .specify/templates/tasks-template.md — every feature must include threat-model, security-test,
+    simplicity-review and review tasks
 - Follow-up TODOs: update the three templates above
+- History: 1.0.0 (2026-11-07) initial ratification
 -->
 
 # Secure Real-Time Chat Constitution
@@ -121,6 +125,8 @@ The web client is the hardest place to keep this promise, because a compromised 
 
 **Rationale:** Most modern breaches arrive through dependencies, build systems, and over-privileged access, not through cryptography.
 
+See also Principle XIII: every new component, service or dependency must also justify its complexity.
+
 ### X. Threat Modelling and Security Testing First
 
 - Every feature MUST have a written threat model (STRIDE or equivalent) before implementation, covering: compromised server, network attacker, malicious contact, malicious group member, stolen device, compromised dependency, and malicious insider.
@@ -149,6 +155,21 @@ The web client is the hardest place to keep this promise, because a compromised 
 - Incidents MUST be followed by a blameless public post-mortem.
 
 **Rationale:** Assume breach. Being ready limits the damage when something goes wrong.
+
+### XIII. Simplicity and Verifiability
+
+Simplicity is a security property: code that cannot be read cannot be audited, and code that cannot be tested cannot be trusted. Simplicity is pursued **without ever weakening Principles I–XII**. If simplifying would remove or weaken a security control, the control stays and the added complexity is recorded in the plan's Complexity Tracking table.
+
+- The simplest design that meets the requirement MUST be chosen. Features, components, services, protocols, and options whose complexity cannot be justified against their value MUST be deferred or cut (YAGNI). v1 scope is the smallest set of work that satisfies the spec.
+- Code MUST be straightforward: small single-purpose functions and modules, explicit over clever, one obvious way to do each thing. No speculative abstraction: introduce an abstraction only when it has at least two real uses or when it creates a test seam around I/O.
+- Security-critical code (cryptography wrapper, authentication, key management, local vault, client integrity) MUST NOT use metaprogramming, reflection, implicit global state, or dynamic dispatch where static code would do.
+- Complexity MUST be bounded by limits enforced in CI (default: cyclomatic complexity ≤ 10 per function, ≤ 50 lines per function, ≤ 400 lines per file). A limit may be exceeded only with an inline justification approved by a reviewer.
+- Behaviour MUST be verifiable by testing. Security-critical logic MUST be written as deterministic functions with all I/O (network, clock, randomness, storage) injected, so it can be tested without mocks of internals. Every requirement MUST map to at least one automated test.
+- Security-critical modules MUST reach 100% branch coverage and pass mutation testing, because coverage alone does not prove that assertions are meaningful.
+- Prefer boring, well-understood technology and fewer moving parts. Every new component, service, protocol, or dependency MUST be justified against not having it.
+- Every code review MUST include a simplicity check: a reviewer other than the author can explain what the code does and why it is correct.
+
+**Rationale:** Complexity hides bugs and defeats audits. Simple code with strong tests is the cheapest way to make security claims verifiable.
 
 ---
 
@@ -204,13 +225,15 @@ Every plan MUST pass, and document, the following before tasks are generated:
 7. Secure defaults require no user configuration (VIII).
 8. New dependencies are reviewed and justified (IX).
 9. A threat model exists and security tests are listed (X).
+10. The design is the simplest that meets the spec; each component, service, and dependency is justified against omitting it, and testability seams for I/O are defined (XIII).
 Any violation MUST be recorded in the plan's Complexity Tracking table with justification, and violations of NON-NEGOTIABLE principles cannot be justified; the plan must change.
 
 **Tasks phase (`/speckit.tasks`)**
-- Every feature's task list MUST include: threat-model task, security test tasks (written first), security review task, and Data Inventory / documentation update task.
+- Every feature's task list MUST include: threat-model task, security test tasks (written first), security review task, simplicity review task, and Data Inventory / documentation update task.
+- The task list MUST include enforcement of the complexity limits, coverage thresholds, and mutation testing required by Principle XIII.
 
 **Implementation & review**
-- Every change requires at least one approving review; changes to crypto, authentication, key management, storage, or client integrity require approval from a designated security reviewer as well.
+- Every change requires at least one approving review that includes the simplicity check from Principle XIII; changes to crypto, authentication, key management, storage, or client integrity require approval from a designated security reviewer as well.
 - CI security checks MUST pass; they cannot be bypassed or marked optional.
 - Security debt MUST be tracked and prioritised; critical security debt blocks release.
 
@@ -224,8 +247,9 @@ Any violation MUST be recorded in the plan's Complexity Tracking table with just
 - This constitution supersedes all other practices, preferences, and deadlines.
 - Amendments require: a written proposal, review by the security lead, an updated Sync Impact Report, and a migration plan for existing code and data.
 - Principles marked **NON-NEGOTIABLE** (I, II, III) may be strengthened but MUST NEVER be weakened or removed.
+- Simplicity (Principle XIII) never overrides Principles I–XII. Where they conflict, the security principle wins and the added complexity is justified and tracked.
 - Versioning follows semantic versioning: **MAJOR** for removing or redefining a principle (never permitted to weaken a NON-NEGOTIABLE one), **MINOR** for adding a principle or materially expanding guidance, **PATCH** for clarifications and wording.
 - Compliance MUST be reviewed at every plan, every pull request touching security-sensitive areas, every release, and in a full constitution audit at least every six months.
 - Any team member may raise a constitution violation; violations block merge and release until resolved.
 
-**Version**: 1.0.0 | **Ratified**: 2026-11-07 | **Last Amended**: 2026-11-07
+**Version**: 1.1.0 | **Ratified**: 2026-11-07 | **Last Amended**: 2026-11-07

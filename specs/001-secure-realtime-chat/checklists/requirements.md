@@ -1,0 +1,36 @@
+# Specification Quality Checklist: Secure Real-Time Chat
+
+**Purpose**: Validate specification completeness and quality before proceeding to planning
+**Created**: 2026-11-07
+**Feature**: [spec.md](../spec.md)
+
+## Content Quality
+
+- [x] No implementation details (languages, frameworks, APIs)
+- [x] Focused on user value and business needs
+- [x] Written for non-technical stakeholders
+- [x] All mandatory sections completed
+
+## Requirement Completeness
+
+- [x] No [NEEDS CLARIFICATION] markers remain
+- [x] Requirements are testable and unambiguous
+- [x] Success criteria are measurable
+- [x] Success criteria are technology-agnostic (no implementation details)
+- [x] All acceptance scenarios are defined
+- [x] Edge cases are identified
+- [x] Scope is clearly bounded
+- [x] Dependencies and assumptions identified
+
+## Feature Readiness
+
+- [x] All functional requirements have clear acceptance criteria
+- [x] User scenarios cover primary flows
+- [x] Feature meets measurable outcomes defined in Success Criteria
+- [x] No implementation details leak into specification
+
+## Notes
+
+- Security properties (end-to-end encryption, forward secrecy, key rotation, sealed-sender-style delivery, PWA distribution) are stated as required behaviour because the constitution mandates them; specific libraries, languages and mechanisms live in `plan-inputs.md`.
+- The spec has no dedicated security & privacy section as the constitution's spec phase requires; FR-030–FR-036 and FR-040–FR-047 cover it, but the plan should confirm per-data-item location, readers and lifetime.
+- Spec body still uses lowercase "user/contact/device" rather than the GLOSSARY.md terms.
