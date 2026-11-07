@@ -145,3 +145,34 @@ describe('reproducible build', () => {
     expect(filesA.some((path) => /-[\w-]{8}\.(js|css)$/.test(path))).toBe(true);
   }, 60_000);
 });
+
+describe('built page', () => {
+  test('has the policy, hashes that match the files, and no inline code', () => {
+    const out = join(scratch(), 'web');
+    execFileSync(
+      'bash',
+      [join(__dirname, '..', '..', 'build', 'build.sh'), '0.0.0', '0.0.0', 'release-1', out],
+      {
+        stdio: 'pipe',
+      },
+    );
+    const html = readFileSync(join(out, 'index.html'), 'utf8');
+    expect(html).toContain('http-equiv="Content-Security-Policy"');
+    expect(html).not.toMatch(/'unsafe-(inline|eval)'/);
+    expect(html).not.toMatch(/<script(?![^>]*\bsrc=)/);
+    expect(html).not.toMatch(/<style|\sstyle=/);
+    const tags = [
+      ...html.matchAll(
+        /<(?:script|link)\b[^>]*\b(?:src|href)="([^"]+)"[^>]*integrity="(sha384-[^"]+)"/g,
+      ),
+    ];
+    expect(tags.length).toBeGreaterThanOrEqual(2);
+    for (const [, reference, integrity] of tags) {
+      const file = readFileSync(join(out, (reference as string).replace(/^\//, '')));
+      expect(integrity, reference).toBe(
+        `sha384-${createHash('sha384').update(file).digest('base64')}`,
+      );
+    }
+    expect(readdirSync(out)).toContain('sw.js');
+  }, 60_000);
+});

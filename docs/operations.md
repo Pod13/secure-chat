@@ -31,3 +31,12 @@ Operational controls required by the constitution (IX, XII). Anything here that 
 - Warrant canary (Constitution XI, SHOULD).
 - Bug bounty once the first audit is complete.
 - Annual independent audit, and an audit before any major cryptographic change.
+
+## Serving the web app
+
+Whatever serves the built files (`build/out/web`) MUST send the same policy as an HTTP header, because a `<meta>` policy cannot carry `frame-ancestors`:
+
+- `Content-Security-Policy`: the value of `CSP` in `web/vite.security.ts`, plus `; frame-ancestors 'none'`.
+- `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, `Cross-Origin-Opener-Policy: same-origin`.
+- `Cache-Control: no-cache` for `index.html`, `sw.js` and `manifest.json`; long-lived `immutable` for `assets/*` (their names carry a content hash).
+- Publish `manifest.json` last, after every file it lists is in place.
