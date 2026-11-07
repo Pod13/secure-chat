@@ -65,7 +65,7 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 - [X] T019 Create the initial migrations for accounts, devices, delivery tokens, envelopes, invites and blobs in `server/migrations/0001_init.sql` per data-model.md, with no column that links an Invite to the Account it created
 - [X] T020 [P] Implement configuration and secrets loading (no secrets in files) in `server/src/config.rs`
 - [X] T021 [P] Implement structured, tamper-evident logging that excludes content, keys, tokens and full IPs in `server/src/logging.rs`
-- [ ] T022 Write tests then implement Device challenge-response authentication and 15-minute Device-bound tokens in `server/src/auth/` (tests in `server/tests/auth.rs` first)
+- [X] T022 Write tests then implement Device challenge-response authentication and 15-minute Device-bound tokens in `server/src/auth/` (tests in `server/tests/auth.rs` first)
 - [X] T023 Implement request validation middleware using `contracts-schema/` in `server/src/api/validate.rs`
 - [ ] T024 [P] Implement the rate-limiting framework without content access in `server/src/abuse/limits.rs`
 - [ ] T025 [P] Configure TLS 1.3 only and security headers (HSTS preload, CSP, no third-party origins) in `server/src/api/headers.rs`

@@ -56,7 +56,10 @@ Each entry: Decision, Rationale, Alternatives considered. Items marked **verify*
 | libsodium | web | Argon2id and XChaCha20-Poly1305 (III) |
 | React, Vite | web | UI and build; kept minimal, pinned |
 | axum, tokio, sqlx | server | HTTP/WebSocket and database access |
-| serde + JSON Schema validator | server, web | strict input validation (X) |
+| jsonschema (no network features), serde_json | server | strict input validation against `contracts-schema/` (X) |
+| ed25519-dalek 2.2.0 | server | verifies Device login signatures; already in the tree through OpenMLS, so one version to track (III) |
+| sha2 | server | hashes session tokens and chains log lines; RustCrypto (III) |
+| getrandom | server | operating-system randomness behind the `Random` port |
 | Playwright, Vitest, proptest, cargo-fuzz | dev only | tests required by X |
 
 All pinned to exact versions with lockfile hashes, scanned in CI. No analytics, crash reporters or third-party fonts.

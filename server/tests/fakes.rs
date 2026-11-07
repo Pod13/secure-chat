@@ -1,6 +1,6 @@
 //! In-memory fakes for the ports in `server/src/ports.rs`.
 
-#![allow(dead_code)]
+#![allow(dead_code, clippy::unwrap_used)]
 
 use server::ports::{Clock, Random};
 use std::cell::Cell;
@@ -34,5 +34,95 @@ impl Random for CountingRandom {
             *b = self.0.get();
             self.0.set(self.0.get().wrapping_add(1));
         }
+    }
+}
+
+use server::auth::{AuthStore, DeviceId, Hash, StoreError};
+use std::{collections::HashMap, sync::Mutex};
+
+/// In-memory auth storage. `fail_after(n)` makes every call from the n-th onward fail, to test
+/// that storage errors are reported and never mistaken for success.
+#[derive(Default)]
+pub struct MemoryAuthStore {
+    pub keys: Mutex<HashMap<DeviceId, Hash>>,
+    pub nonces: Mutex<HashMap<DeviceId, (Hash, u64)>>,
+    pub sessions: Mutex<HashMap<Hash, (DeviceId, u64)>>,
+    calls: Mutex<usize>,
+    fail_from: Mutex<Option<usize>>,
+}
+
+impl MemoryAuthStore {
+    pub fn with_device(device: DeviceId, key: Hash) -> Self {
+        let store = Self::default();
+        store.keys.lock().unwrap().insert(device, key);
+        store
+    }
+
+    pub fn fail_after(&self, calls: usize) {
+        *self.fail_from.lock().unwrap() = Some(calls);
+    }
+
+    fn tick(&self) -> Result<(), StoreError> {
+        let mut calls = self.calls.lock().unwrap();
+        *calls += 1;
+        match *self.fail_from.lock().unwrap() {
+            Some(limit) if *calls > limit => Err(StoreError),
+            _ => Ok(()),
+        }
+    }
+}
+
+impl AuthStore for MemoryAuthStore {
+    async fn device_key(&self, device: &DeviceId) -> Result<Option<Hash>, StoreError> {
+        self.tick()?;
+        Ok(self.keys.lock().unwrap().get(device).copied())
+    }
+
+    async fn put_nonce(
+        &self,
+        device: &DeviceId,
+        nonce: Hash,
+        expires_at: u64,
+    ) -> Result<(), StoreError> {
+        self.tick()?;
+        self.nonces
+            .lock()
+            .unwrap()
+            .insert(*device, (nonce, expires_at));
+        Ok(())
+    }
+
+    async fn take_nonce(&self, device: &DeviceId) -> Result<Option<(Hash, u64)>, StoreError> {
+        self.tick()?;
+        Ok(self.nonces.lock().unwrap().remove(device))
+    }
+
+    async fn put_session(
+        &self,
+        token_hash: Hash,
+        device: DeviceId,
+        expires_at: u64,
+    ) -> Result<(), StoreError> {
+        self.tick()?;
+        self.sessions
+            .lock()
+            .unwrap()
+            .insert(token_hash, (device, expires_at));
+        Ok(())
+    }
+
+    async fn session(&self, token_hash: &Hash) -> Result<Option<(DeviceId, u64)>, StoreError> {
+        self.tick()?;
+        Ok(self.sessions.lock().unwrap().get(token_hash).copied())
+    }
+
+    async fn delete_device_sessions(&self, device: &DeviceId) -> Result<(), StoreError> {
+        self.tick()?;
+        self.nonces.lock().unwrap().remove(device);
+        self.sessions
+            .lock()
+            .unwrap()
+            .retain(|_, (d, _)| d != device);
+        Ok(())
     }
 }
