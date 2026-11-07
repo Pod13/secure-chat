@@ -76,7 +76,7 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 
 ### Crypto and client foundation
 
-- [ ] T030 Write tests then implement the OpenMLS wrapper (create group, add, remove, commit, encrypt, decrypt) with fixed-bucket padding, accepting only the one configured ciphersuite and rejecting all others with a test (accepted risk RUSTSEC-2026-0387) in `crypto-wasm/src/lib.rs` and `crypto-wasm/src/padding.rs` (tests in `crypto-wasm/tests/` first)
+- [X] T030 Write tests then implement the OpenMLS wrapper (create group, add, remove, commit, encrypt, decrypt) with fixed-bucket padding, accepting only the one configured ciphersuite and rejecting all others with a test (accepted risk RUSTSEC-2026-0387) in `crypto-wasm/src/lib.rs` and `crypto-wasm/src/padding.rs` (tests in `crypto-wasm/tests/` first)
 - [ ] T031 [P] Add cargo-fuzz targets for MLS message handling and padding in `crypto-wasm/fuzz/`
 - [ ] T032 [P] Add cargo-fuzz targets for the HTTP request, WebSocket frame and schema-validation parsers in `server/fuzz/`
 - [ ] T033 [P] Add the typed crypto bridge in `web/src/crypto/bridge.ts` and the libsodium helpers (Argon2id, XChaCha20-Poly1305) in `web/src/crypto/sodium.ts`
