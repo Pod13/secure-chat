@@ -4,6 +4,8 @@
 
 #![allow(dead_code)]
 
+pub mod db;
+
 pub struct Artifact {
     pub source: String,
     pub bytes: Vec<u8>,

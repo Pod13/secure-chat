@@ -31,6 +31,10 @@ impl TruncatedIp {
         };
         Self(text)
     }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
 }
 
 /// The only kinds of value a log field can hold.

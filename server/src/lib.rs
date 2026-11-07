@@ -2,6 +2,7 @@
 
 use axum::{Router, routing::get};
 
+pub mod abuse;
 pub mod api;
 pub mod auth;
 pub mod config;

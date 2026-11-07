@@ -126,3 +126,33 @@ impl AuthStore for MemoryAuthStore {
         Ok(())
     }
 }
+
+use server::abuse::limits::{Bucket, LimitStore, StoreError as LimitStoreError};
+
+/// In-memory rate-limit counters.
+#[derive(Default)]
+pub struct MemoryLimitStore {
+    pub counters: Mutex<HashMap<(String, u64), u32>>,
+    pub broken: Mutex<bool>,
+}
+
+impl LimitStore for MemoryLimitStore {
+    async fn hit(&self, bucket: &Bucket, window_start: u64) -> Result<u32, LimitStoreError> {
+        if *self.broken.lock().unwrap() {
+            return Err(LimitStoreError);
+        }
+        let mut counters = self.counters.lock().unwrap();
+        let count = counters
+            .entry((bucket.as_str().to_string(), window_start))
+            .or_insert(0);
+        *count += 1;
+        Ok(*count)
+    }
+
+    async fn purge_before(&self, before: u64) -> Result<u64, LimitStoreError> {
+        let mut counters = self.counters.lock().unwrap();
+        let had = counters.len();
+        counters.retain(|(_, start), _| *start >= before);
+        Ok((had - counters.len()) as u64)
+    }
+}

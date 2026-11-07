@@ -67,7 +67,7 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 - [X] T021 [P] Implement structured, tamper-evident logging that excludes content, keys, tokens and full IPs in `server/src/logging.rs`
 - [X] T022 Write tests then implement Device challenge-response authentication and 15-minute Device-bound tokens in `server/src/auth/` (tests in `server/tests/auth.rs` first)
 - [X] T023 Implement request validation middleware using `contracts-schema/` in `server/src/api/validate.rs`
-- [ ] T024 [P] Implement the rate-limiting framework without content access in `server/src/abuse/limits.rs`
+- [X] T024 [P] Implement the rate-limiting framework without content access in `server/src/abuse/limits.rs`
 - [ ] T025 [P] Configure TLS 1.3 only and security headers (HSTS preload, CSP, no third-party origins) in `server/src/api/headers.rs`
 - [ ] T026 Implement the WebSocket channel and frames from `contracts/realtime-frames.md` in `server/src/api/ws.rs`
 - [ ] T027 Implement the envelope queue with delete-on-ack and 30-day expiry job in `server/src/delivery/queue.rs`
