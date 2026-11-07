@@ -62,6 +62,11 @@ async fn both_endpoints_work_without_credentials_and_ignore_any_that_are_sent() 
     assert_ne!(odd.status, 401, "{}", odd.raw);
 }
 
+fn shape(bucket: &str) -> bool {
+    let rest = bucket.split_once(':').map_or("", |(_, r)| r);
+    rest.starts_with("h:") || rest.starts_with("ip:")
+}
+
 #[tokio::test]
 async fn rate_limit_counters_are_named_by_network_prefix_or_token_hash_only() {
     let app = start().await;
@@ -100,10 +105,6 @@ async fn rate_limit_counters_are_named_by_network_prefix_or_token_hash_only() {
     .await
     .unwrap();
     assert_eq!(buckets.len(), 2);
-    let shape = |b: &str| {
-        let rest = b.split_once(':').map(|(_, r)| r).unwrap_or("");
-        rest.starts_with("h:") || rest.starts_with("ip:")
-    };
     assert!(buckets.iter().all(|b| shape(b)), "{buckets:?}");
     assert!(
         buckets.iter().any(|b| b == "redeem:ip:127.0.0.0"),
