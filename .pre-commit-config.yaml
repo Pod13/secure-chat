@@ -10,3 +10,11 @@ repos:
       - id: detect-private-key
       - id: check-added-large-files
         args: [--maxkb=500]
+  - repo: local
+    hooks:
+      - id: readme-status
+        name: README progress matches tasks.md
+        entry: scripts/readme-status.sh --check
+        language: system
+        files: ^(README\.md|specs/.*/tasks\.md)$
+        pass_filenames: false

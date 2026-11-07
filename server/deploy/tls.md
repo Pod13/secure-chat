@@ -11,7 +11,7 @@ The server speaks TLS 1.3 itself and has no plaintext mode. It refuses to start 
 ## Local development
 
 ```sh
-openssl req -x509 -newkey ed25519 -nodes -days 30 -subj /CN=localhost \
+openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes -days 30 -subj /CN=localhost \
   -addext "subjectAltName=DNS:localhost" -keyout /tmp/dev-key.pem -out /tmp/dev-cert.pem
 export TLS_CERT_FILE=/tmp/dev-cert.pem TLS_KEY_FILE=/tmp/dev-key.pem
 export DATABASE_URL=postgres://postgres@localhost:55432/postgres

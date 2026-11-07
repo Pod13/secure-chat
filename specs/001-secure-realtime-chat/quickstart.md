@@ -1,11 +1,23 @@
 # Quickstart: Validation Guide
 
-Runnable scenarios that prove the feature works end to end. Contracts: [http-api.md](contracts/http-api.md), [realtime-frames.md](contracts/realtime-frames.md). Entities: [data-model.md](data-model.md). Setup commands will be filled in by the tasks phase once the repository scaffolding exists.
+Runnable scenarios that prove the feature works end to end. Contracts: [http-api.md](contracts/http-api.md), [realtime-frames.md](contracts/realtime-frames.md). Entities: [data-model.md](data-model.md).
 
 ## Prerequisites
 
 - Rust stable, Node LTS, PostgreSQL, an S3-compatible store (local MinIO is fine), two browser profiles (or one browser plus one phone).
 - A test KMS stub; production keys are never used. Production data is never copied to test environments.
+
+## Run it locally
+
+Needs Rust stable, Node LTS, PostgreSQL 16 binaries (`initdb`, `pg_ctl`, `psql`) and `openssl`.
+
+```sh
+scripts/dev.sh     # throwaway database + certificate, server on https://localhost:8080, web on http://localhost:5173
+scripts/check.sh   # everything CI checks: fmt, clippy, all tests, cargo deny, web typecheck/lint/tests
+scripts/dev-db.sh stop
+```
+
+Local state lives in `.local/` (git-ignored). The browser will warn about the throwaway certificate: that is expected on a dev machine. Only the features whose tasks are marked `[X]` in [tasks.md](tasks.md) work yet: the server's health check and secured channel, and the empty web shell.
 
 ## Scenario 1: Two people, one encrypted conversation (Story 1)
 

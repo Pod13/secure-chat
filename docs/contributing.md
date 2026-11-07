@@ -27,3 +27,4 @@ Every pull request needs one approving review that includes the simplicity check
 - Never add a dependency without justification in `specs/001-secure-realtime-chat/research.md` (R8). Pin exact versions and commit lockfiles. Prefer releases that are at least two weeks old.
 - Never commit secrets, keys or production data.
 - Complexity limits (CI-enforced): cyclomatic complexity at most 10, at most 50 lines per function, at most 400 lines per file. A limit is exceeded only with an inline justification approved in review.
+- When you change task status, architecture or how to run the app, update `README.md` in the same commit. The progress table is generated: run `scripts/readme-status.sh`. `scripts/check.sh` and the pre-commit hook fail if it is stale.

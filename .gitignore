@@ -60,3 +60,6 @@ Thumbs.db
 
 # Spike build output
 spikes/**/pkg/
+
+# Local dev state (database, throwaway certificate)
+.local/
