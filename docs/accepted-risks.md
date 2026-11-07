@@ -2,7 +2,7 @@
 
 Each entry is a known issue we have chosen to accept for now. The security lead must review every entry by its date. An entry is removed as soon as it is fixed.
 
-Last reviewed by the security lead: 2026-11-07 (recorded on the project owner's word; add the reviewer's name). The "Review by" dates below still apply.
+Review status: pending sign-off by the project owner. Record the date and reviewer here when done. The "Review by" dates below apply.
 
 | ID | Where | Why accepted | Condition to keep accepting | Review by |
 |----|-------|--------------|-----------------------------|-----------|
