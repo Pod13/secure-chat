@@ -13,10 +13,12 @@ pub const API_CSP: &str =
     "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'";
 
 /// Policy for the web app's HTML: own origin only, no inline or eval'd script, Trusted Types.
-pub const APP_CSP: &str = "default-src 'none'; script-src 'self'; style-src 'self'; \
+/// Must agree with `CSP` in `web/vite.security.ts` (a web test compares them); the browser applies
+/// the header and the page's own tag together, so a difference would break or weaken one of them.
+pub const APP_CSP: &str = "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; \
     connect-src 'self'; img-src 'self' blob:; media-src 'self' blob:; font-src 'self'; \
     manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; \
-    frame-ancestors 'none'; require-trusted-types-for 'script'; trusted-types app";
+    frame-ancestors 'none'; require-trusted-types-for 'script'; trusted-types sw-url";
 
 pub const HEADERS: [(&str, &str); 9] = [
     (

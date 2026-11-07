@@ -21,7 +21,8 @@ export const CSP = [
   "base-uri 'none'",
   "form-action 'none'",
   "require-trusted-types-for 'script'",
-  "trusted-types 'none'",
+  // One policy, which can only produce the service worker's own URL (src/sw/swUrl.ts).
+  'trusted-types sw-url',
 ].join('; ');
 
 type BundleItem = { type: 'chunk'; code: string } | { type: 'asset'; source: string | Uint8Array };
@@ -66,14 +67,25 @@ export function withSecurityTags(html: string): string {
   );
 }
 
+/**
+ * Hashes are taken in the very last bundle step, after Vite has finished editing chunks (for
+ * example filling in preload lists for dynamic imports). Hashing earlier would hash code that is
+ * not what ends up on disk, and the browser would refuse the script.
+ */
 export function securityPlugin(): Plugin {
   return {
     name: 'secure-chat-security',
     apply: 'build',
-    transformIndexHtml: {
+    generateBundle: {
       order: 'post',
-      handler: (html, context) =>
-        withSecurityTags(addIntegrity(html, (context.bundle ?? {}) as Bundle)),
+      handler(_options, bundle) {
+        for (const [name, item] of Object.entries(bundle)) {
+          if (item.type !== 'asset' || !name.endsWith('.html')) continue;
+          const html =
+            typeof item.source === 'string' ? item.source : new TextDecoder().decode(item.source);
+          item.source = withSecurityTags(addIntegrity(html, bundle as unknown as Bundle));
+        }
+      },
     },
   };
 }

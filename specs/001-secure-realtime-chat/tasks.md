@@ -110,7 +110,7 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 - [X] T045 [P] [US1] Contract tests for `POST /accounts`, `/auth/*`, `/invites`, `/delivery-tokens`, `/deliver` in `server/tests/contract_accounts.rs`
 - [X] T046 [P] [US1] Security test: a server-side dump after a full chat contains no plaintext, username or Contact list in `server/tests/adversary_chat.rs`
 - [X] T047 [P] [US1] Security test: a delivery with a revoked or unknown token is rejected and sender identity is never logged in `server/tests/sealed_sender.rs`
-- [ ] T048 [P] [US1] End-to-end test of Scenario 1 (online, offline, ordering, no duplicates) in `web/tests/e2e/chat.spec.ts`
+- [X] T048 [P] [US1] End-to-end test of Scenario 1 (online, offline, ordering, no duplicates) in `web/tests/e2e/chat.spec.ts`
 - [X] T049 [P] [US1] Security test: account creation leaves no stored or logged link between the Invite and the new Account in `server/tests/no_invite_link.rs`
 - [X] T050 [P] [US1] Security test: key-package fetch and Invite redemption need no account authentication and log no requester in `server/tests/keypackage_fetch.rs`
 - [X] T051 [P] [US1] Unit tests for replies, reactions and edits (only the author can edit; unknown targets are ignored) in `web/tests/messagetypes.test.ts`
@@ -122,7 +122,7 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 - [X] T054 [US1] Implement Invite creation, revocation, expiry and use limits in `server/src/accounts/invites.rs`
 - [X] T055 [US1] Implement delivery tokens and sealed-sender `POST /deliver` with per-token and per-recipient rate limits in `server/src/delivery/sealed.rs`
 - [X] T056 [US1] Implement key-package storage and `POST /key-packages/fetch` and `POST /invites/redeem` (Contact and Group Invites), a last-resort key package per Device, and per-token fetch rate limits in `server/src/accounts/keypackages.rs`
-- [ ] T057 [P] [US1] Build the sign-up flow (username, passcode, Recovery Key explanation) in `web/src/app/screens/SignUp.tsx`
+- [X] T057 [P] [US1] Build the sign-up flow (username, passcode, Recovery Key explanation) in `web/src/app/screens/SignUp.tsx`
 - [X] T058 [US1] Generate keys on the Device and create the Account in `web/src/crypto/account.ts`
 - [X] T059 [US1] Generate the Recovery Key at sign-up, show it once, and derive the Account identity key (its private half only signs Device certificates at sign-up and recovery and is never stored), Backup key and Backup access token with HKDF using distinct labels in `web/src/crypto/recoverykeys.ts`
 - [X] T157 [US1] Save and restore a Device's MLS state (keys, credential, groups) so a reload does not lose Conversations, in `crypto-wasm/src/state.rs`, `crypto-wasm/src/wasm.rs` and `web/src/crypto/bridge.ts` (prerequisite of T058; found missing while implementing it)
@@ -131,9 +131,9 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 - [X] T160 [US1] Classify incoming envelopes (Welcome or group message, and which group) before decrypting, in `crypto-wasm/src/lib.rs` and `web/src/crypto/bridge.ts` (found missing while implementing T061)
 - [X] T161 [US1] Conversation history and message status store (sealed in the vault) in `web/src/store/history.ts`; Messenger with encrypted outbox, per-conversation ordering and delivery receipts in `web/src/net/delivery.ts`
 - [ ] T060 [US1] Build Invite creation, sharing and QR code in `web/src/app/screens/Invite.tsx`
-- [ ] T061 [US1] Implement joining by Invite and starting a 1:1 Conversation in `web/src/app/screens/JoinInvite.tsx` and `web/src/crypto/conversation.ts`
-- [ ] T062 [US1] Build the conversation view with text sending, receive, and status (sending, sent, delivered) in `web/src/app/screens/Conversation.tsx`
-- [ ] T063 [US1] Implement replies, reactions and edits as encrypted application messages in `web/src/crypto/messagetypes.ts` and render them in `web/src/app/screens/Conversation.tsx` (FR-013)
+- [X] T061 [US1] Implement joining by Invite and starting a 1:1 Conversation in `web/src/app/screens/JoinInvite.tsx` and `web/src/crypto/conversation.ts`
+- [X] T062 [US1] Build the conversation view with text sending, receive, and status (sending, sent, delivered) in `web/src/app/screens/Conversation.tsx`
+- [X] T063 [US1] Implement replies, reactions and edits as encrypted application messages in `web/src/crypto/messagetypes.ts` and render them in `web/src/app/screens/Conversation.tsx` (FR-013)
 - [X] T064 [US1] Implement acknowledgements, status messages and offline catch-up in `web/src/net/delivery.ts`
 - [X] T065 [US1] Notify the sender when a message expires undelivered in `web/src/net/expiry.ts`
 - [ ] T066 [US1] Security and simplicity review for US1 (a reviewer other than the author can explain the code; complexity limits met), then update `threat-model.md` and `data-inventory.md` (security review and documentation task)

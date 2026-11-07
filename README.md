@@ -11,7 +11,7 @@ A real-time chat where the server can never read your messages. The web app inst
 |-------|-----------:|--------|
 | Phase 1: Setup (Shared Infrastructure) | 11 / 12 | in progress |
 | Phase 2: Foundational (Blocking Prerequisites) | 32 / 32 | done |
-| Phase 3: User Story 1 - Create an account and start a private 1:1 chat | 20 / 27 | in progress |
+| Phase 3: User Story 1 - Create an account and start a private 1:1 chat | 25 / 27 | in progress |
 | Phase 4: User Story 2 - Verify a contact's identity | 0 / 7 | not started |
 | Phase 5: User Story 3 - Install on Android and iPhone | 0 / 8 | not started |
 | Phase 6: User Story 4 - Link and unlink devices | 0 / 13 | not started |
@@ -22,7 +22,7 @@ A real-time chat where the server can never read your messages. The web app inst
 | Phase 11: User Story 9 - Block, report and control privacy signals | 0 / 7 | not started |
 | Phase 12: User Story 10 - Recover an account after losing every device | 0 / 10 | not started |
 | Phase 13: Polish and Cross-Cutting Concerns | 0 / 13 | not started |
-| **Total** | **63 / 161 (39%)** | |
+| **Total** | **68 / 161 (42%)** | |
 <!-- progress:end -->
 
 Details: [specs/001-secure-realtime-chat/tasks.md](specs/001-secure-realtime-chat/tasks.md). Tasks that need people (security-lead sign-off, real-device tests, audits) stay open until a person does them.
@@ -64,6 +64,31 @@ sequenceDiagram
     B->>S: ack
     S->>DB: delete envelope (delivered, or after 30 days)
     Note over B: Decrypt with MLS, remove padding,<br/>store in the local vault<br/>(Argon2id-derived key, XChaCha20-Poly1305).
+```
+
+### How two people connect
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice's device
+    participant S as Relay server
+    participant B as Bob's device (new)
+
+    A->>S: make two single-use Invites (sign-up and contact), authenticated
+    Note over A: Link = #/join/contact~signup<br/>The fragment is never sent to any server.
+    A-->>B: link, shared by a channel Alice trusts
+    B->>S: create account with the sign-up Invite<br/>(public keys + Device certificate only)
+    Note over B: Recovery Key shown once, then forgotten
+    B->>S: redeem the contact Invite (anonymous)
+    S-->>B: Alice's delivery tokens + key packages
+    Note over B: Creates the MLS group, adds Alice's Devices
+    B->>S: Welcome + first message (anonymous, sealed sender)
+    Note over B: First message carries Bob's own delivery tokens,<br/>inside the encrypted group
+    S-->>A: envelopes over WebSocket (or when she reconnects)
+    A->>S: ack after saving
+    Note over A: Joins the group, learns how to reach Bob
+    A-->>B: later messages, and a delivery receipt for each,<br/>all inside the encrypted conversation
 ```
 
 ## Security model at a glance
@@ -119,8 +144,11 @@ Needs Rust stable, Node LTS, PostgreSQL 16 binaries (`initdb`, `pg_ctl`, `psql`)
 ```sh
 scripts/dev.sh        # throwaway database + certificate; server https://localhost:8080, web http://localhost:5173
 scripts/check.sh      # everything CI checks: format, lint, tests, dependency policy, README status
+scripts/e2e.sh        # two real browsers against a real relay and database (add --project=chrome|firefox|webkit)
 scripts/dev-db.sh stop
 ```
+
+`scripts/dev.sh` prints a first sign-up invite. Open http://localhost:5173, paste it, choose a name and passcode, and write down the Recovery Key. Then open **Invite someone**, make a link, and open it in a second browser profile to start a conversation. The browser talks only to its own origin; the dev server forwards `/v1` to the relay.
 
 Local state lives in `.local/` (git-ignored). Your browser will warn about the throwaway certificate; that is expected on a dev machine. Only features whose tasks are done work yet. Walkthroughs for each story: [quickstart.md](specs/001-secure-realtime-chat/quickstart.md).
 

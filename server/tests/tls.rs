@@ -115,6 +115,8 @@ async fn every_response_carries_the_security_headers_even_errors() {
 #[test]
 fn the_policies_allow_no_inline_eval_or_foreign_sources() {
     for policy in [API_CSP, APP_CSP] {
+        // WebAssembly may be compiled (needed for the MLS module), which is not general eval.
+        let policy = &policy.replace("'wasm-unsafe-eval'", "");
         for banned in [
             "unsafe-inline",
             "unsafe-eval",
@@ -130,7 +132,9 @@ fn the_policies_allow_no_inline_eval_or_foreign_sources() {
         );
     }
     assert!(APP_CSP.contains("require-trusted-types-for 'script'"));
-    assert!(APP_CSP.contains("script-src 'self';"));
+    assert!(APP_CSP.contains("script-src 'self' 'wasm-unsafe-eval';"));
+    assert!(APP_CSP.contains("trusted-types sw-url"));
+    assert!(!APP_CSP.contains("'unsafe-eval'"));
 }
 
 #[test]

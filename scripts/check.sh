@@ -8,6 +8,6 @@ cargo fmt --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
 cargo deny check
-scripts/build-wasm.sh
+scripts/build-wasm.sh web
 (cd web && npm run typecheck && npm run lint && npm test)
 echo "all checks passed"

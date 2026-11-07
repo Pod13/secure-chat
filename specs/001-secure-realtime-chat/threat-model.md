@@ -55,3 +55,14 @@ Covers the seven attackers required by Constitution X. "Residual" means the risk
 The threat model is reviewed again at the close of each user story (the review task in each phase) and whenever a mitigation changes.
 
 Signing off the threat model does not cover constitution 1.2.1 or the accepted risks in `docs/accepted-risks.md`; those reviews are recorded separately and are still pending.
+
+## Amendments since sign-off (awaiting review at T066)
+
+These were made while building User Story 1. The signed table above is unchanged.
+
+| Date | Change | Why | Residual |
+|------|--------|-----|----------|
+| 2026-11-07 | The page policy allows one Trusted Types policy, `sw-url`, instead of none. It can produce only the URL `/sw.js`. | Browsers refuse to register a service worker from a plain string under `require-trusted-types-for 'script'`, so the client-integrity guard could not start. The relay's CSP header and the page's tag are tested to agree. | A bug in that one policy could allow another worker script. The policy rejects every other URL (tested) and the worker must still be listed in the signed manifest. |
+| 2026-11-07 | An Invite link made by the app carries two single-use tokens: a sign-up Invite and a Contact Invite, both owned by the creator. | One link has to both create the account and start the conversation (Scenario 1), and sign-up only accepts sign-up Invites. | The relay sees two anonymous requests (sign-up, then redeem) close together from the same IP prefix and can infer that the new Account was invited by that Invite's owner. It stores no link, but it can correlate by timing for up to 7 days. A random delay between the two would reduce this, at the cost of the "lands in the conversation at once" experience. **Needs an owner decision.** |
+| 2026-11-07 | "Delivered" is a receipt message the recipient's Device sends inside the encrypted conversation. | The relay must not learn whether or when a message was read or delivered. | The sender learns when the recipient's Device was online. Turning receipts off is covered by story 7 (T-numbers in Phase 9). |
+| 2026-11-07 | The Device's whole MLS state is saved in the vault (sealed with XChaCha20-Poly1305 under the passcode-derived key), after every change. | A reload would otherwise lose every conversation. | An attacker who can read the vault while it is unlocked gets the state. This is the existing "stolen unlocked device" case. |

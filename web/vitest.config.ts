@@ -12,7 +12,7 @@ export default defineConfig({
       provider: 'v8',
       include: ['src/**'],
       // Browser glue with no decisions in it; covered by the end-to-end tests (Scenario 6).
-      exclude: ['src/sw/sw.ts', 'src/sw/register.ts', 'src/main.tsx'],
+      exclude: ['src/sw/sw.ts', 'src/sw/register.ts', 'src/main.tsx', 'src/crypto/wasm.ts', 'src/wasm/**'],
       thresholds: Object.fromEntries(
         securityCritical.map((glob) => [
           glob,

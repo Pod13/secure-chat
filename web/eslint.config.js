@@ -11,6 +11,7 @@ const limits = {
 export default tseslint.config(
   {
     ignores: [
+      'src/wasm/',
       'dist/',
       'coverage/',
       'node_modules/',

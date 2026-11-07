@@ -25,3 +25,17 @@ Anything not listed here MUST NOT be stored (Constitution IV). This file is the 
 | Operator audit log of admin actions | Incident response | Yes (no user content) | 1 year, tamper-evident |
 
 Not stored: which Account used an Invite, usernames, phone numbers, emails, message content, Group names or membership, Contact lists, sender identity of a delivery, read receipts, typing or presence signals.
+
+## On the Device (never sent to the server)
+
+Everything below lives in the browser's IndexedDB. Each value is sealed with XChaCha20-Poly1305 under a random data key; the data key is wrapped by an Argon2id key made from the passcode. Names are keyed hashes, so storage shows neither content nor record names.
+
+| Data | Purpose |
+|------|---------|
+| Username, Device name, Device signing key, label key | Show who you are; log in to the relay |
+| MLS state (keys, credentials, group secrets) | Continue every Conversation after a reload |
+| Conversation records (group id, other side's delivery tokens, own tokens and their ids) | Know where to send, and which tokens to revoke |
+| Conversation history and message status | Show messages; show sending, sent, delivered or expired |
+| Outbox (ciphertext waiting to be sent) | Send exactly once after an outage |
+
+Not kept anywhere: the passcode, the Recovery Key (shown once), the Account identity private key (it only signs the Device certificate at sign-up).

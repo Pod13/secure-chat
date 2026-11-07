@@ -152,7 +152,7 @@ export class Api {
     await this.send('POST', '/deliver', { token, ciphertext: toBase64Url(ciphertext) });
   }
 
-  async createInvite(kind: 'contact' | 'group', expiresAt: number, maxUses: number) {
+  async createInvite(kind: 'contact' | 'group' | 'service', expiresAt: number, maxUses: number) {
     const reply = parseObject(
       await this.authed('POST', '/invites', { kind, expires_at: expiresAt, max_uses: maxUses }),
     );

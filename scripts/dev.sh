@@ -17,6 +17,8 @@ export TLS_CERT_FILE="$PWD/.local/dev-cert.pem" TLS_KEY_FILE="$PWD/.local/dev-ke
 
 [ -d web/node_modules ] || (cd web && npm ci)
 cargo build -p server
+scripts/build-wasm.sh web
+echo "First sign-up invite (paste it into the sign-up form): $(target/debug/server seed-invite 7 5)"
 trap 'kill 0' EXIT
 target/debug/server &
 (cd web && npm run dev) &

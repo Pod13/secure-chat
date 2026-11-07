@@ -3,8 +3,8 @@ import { useId, type InputHTMLAttributes } from 'react';
 interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, 'id'> {
   label: string;
   /** Shown under the field and announced with it. */
-  hint?: string;
-  error?: string;
+  hint?: string | undefined;
+  error?: string | undefined;
 }
 
 /** A labelled input. The label, hint and error are all tied to the input for assistive tech. */

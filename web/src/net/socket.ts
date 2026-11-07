@@ -69,6 +69,15 @@ export class RealtimeClient {
     void this.connect();
   }
 
+  /** Connects now, if the client is waiting out a delay (for example, the network just came back). */
+  retryNow(): void {
+    if (this.state !== 'waiting') return;
+    this.cancelTimer?.();
+    this.cancelTimer = undefined;
+    this.attempt = 0;
+    void this.connect();
+  }
+
   /** Disconnects and stays disconnected until `start` is called again. */
   stop(): void {
     this.teardown();

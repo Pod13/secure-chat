@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 
 import { describe, expect, test } from 'vitest';
 
@@ -39,11 +40,11 @@ describe('content security policy', () => {
     expect(policy.get('connect-src')).toEqual(["'self'"]);
   });
 
-  test('forbids base tags and form posts, and requires Trusted Types with no policies', () => {
+  test('forbids base tags and form posts, and requires Trusted Types with one narrow policy', () => {
     expect(policy.get('base-uri')).toEqual(["'none'"]);
     expect(policy.get('form-action')).toEqual(["'none'"]);
     expect(policy.get('require-trusted-types-for')).toEqual(["'script'"]);
-    expect(policy.get('trusted-types')).toEqual(["'none'"]);
+    expect(policy.get('trusted-types')).toEqual(['sw-url']);
   });
 });
 
@@ -93,5 +94,27 @@ describe('integrity attributes', () => {
     const out = withSecurityTags('<head><title>x</title></head>');
     expect(out.startsWith('<head><meta http-equiv="Content-Security-Policy"')).toBe(true);
     expect(out).toContain(`content="${CSP}"`);
+  });
+});
+
+describe('the policy the relay sends as a header', () => {
+  // The browser applies the header and the page's own tag together, so they must agree.
+  const source = readFileSync(new URL('../../server/src/api/headers.rs', import.meta.url), 'utf8');
+  const start =
+    source.indexOf('pub const APP_CSP: &str = "') + 'pub const APP_CSP: &str = "'.length;
+  const literal = source.slice(start, source.indexOf('";', start));
+  // A Rust string continued over several lines drops the line break and the indentation.
+  const header = directives(literal.replace(/\\\n\s*/g, ''));
+
+  test('has every directive of the page policy with the same sources', () => {
+    expect(header.size).toBeGreaterThan(10);
+    for (const [name, values] of directives(CSP)) {
+      expect(header.get(name), name).toEqual(values);
+    }
+  });
+
+  test('adds only what a meta tag cannot carry or what is harmless', () => {
+    const extra = [...header.keys()].filter((name) => !directives(CSP).has(name)).sort();
+    expect(extra).toEqual(['font-src', 'frame-ancestors']);
   });
 });

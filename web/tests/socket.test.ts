@@ -316,3 +316,50 @@ describe('sending', () => {
     expect(t.last().sent.length).toBe(1);
   });
 });
+
+describe('reconnecting at once', () => {
+  test('when the network returns, a waiting client connects now and starts its delays over', async () => {
+    const t = setup();
+    t.client.start();
+    await flush();
+    for (let i = 0; i < 4; i += 1) {
+      t.last().onclose?.();
+      t.timers.fireNext();
+      await flush();
+    }
+    t.last().onclose?.();
+    expect(t.client.connection).toBe('waiting');
+    const before = t.sockets.length;
+    t.client.retryNow();
+    await flush();
+    expect(t.sockets.length).toBe(before + 1);
+    expect(t.timers.live()).toHaveLength(0); // the long wait was cancelled
+    t.last().onclose?.();
+    expect(t.timers.fireNext()).toBe(500); // delays began again from the start
+  });
+
+  test('does nothing unless the client is waiting to reconnect', async () => {
+    const t = setup();
+    t.client.retryNow(); // idle
+    expect(t.sockets).toHaveLength(0);
+    t.client.start();
+    await flush();
+    t.client.retryNow(); // connecting
+    await flush();
+    expect(t.sockets).toHaveLength(1);
+    t.last().onopen?.();
+    t.client.retryNow(); // open
+    expect(t.sockets).toHaveLength(1);
+  });
+
+  test('a removed device never reconnects', async () => {
+    const t = setup();
+    t.client.start();
+    await flush();
+    t.last().onopen?.();
+    t.last().onmessage?.({ data: JSON.stringify({ type: 'device-unlinked', reason: 'unlinked' }) });
+    t.client.retryNow();
+    await flush();
+    expect(t.sockets).toHaveLength(1);
+  });
+});
