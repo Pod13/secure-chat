@@ -10,6 +10,7 @@ const KEY_BYTES = 32;
 const NONCE_BYTES = 24;
 const TAG_BYTES = 16;
 const SALT_BYTES = 16;
+const HASH_BYTES = 16;
 
 export interface KdfParams {
   /** Argon2id passes. */
@@ -40,6 +41,8 @@ export interface Sodium {
   newSalt(): Uint8Array;
   /** Argon2id key from a passcode (Unicode-normalised so equal-looking passcodes match). */
   deriveKey(passcode: string, salt: Uint8Array, params?: KdfParams): Uint8Array;
+  /** 16-byte keyed BLAKE2b hash: a stable label that reveals nothing about `data` without the key. */
+  keyedHash(key: Uint8Array, data: Uint8Array): Uint8Array;
   /** Returns nonce || ciphertext || tag. */
   seal(key: Uint8Array, plaintext: Uint8Array, aad?: Uint8Array): Uint8Array;
   /** Reverses `seal`; throws `CryptoError` for anything that does not authenticate. */
@@ -71,6 +74,11 @@ export async function createSodium(random: Random): Promise<Sodium> {
         params.memlimit,
         lib.crypto_pwhash_ALG_ARGON2ID13,
       );
+    },
+
+    keyedHash(key, data) {
+      requireKey(key);
+      return lib.crypto_generichash(HASH_BYTES, data, key);
     },
 
     seal(key, plaintext, aad = new Uint8Array()) {

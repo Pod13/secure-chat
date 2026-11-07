@@ -146,3 +146,23 @@ describe('Argon2id passcode keys', () => {
     expect([...counting.newSalt()]).toEqual([...Array(16).keys()]);
   });
 });
+
+describe('keyed hash', () => {
+  const text = new TextEncoder().encode('contact-42');
+
+  test('is 16 bytes and repeatable for the same key and data', () => {
+    const a = sodium.keyedHash(key(1), text);
+    expect(a.length).toBe(16);
+    expect(toHex(sodium.keyedHash(key(1), text))).toBe(toHex(a));
+  });
+
+  test('changes with the key and with the data', () => {
+    const base = toHex(sodium.keyedHash(key(1), text));
+    expect(toHex(sodium.keyedHash(key(2), text))).not.toBe(base);
+    expect(toHex(sodium.keyedHash(key(1), new TextEncoder().encode('contact-43')))).not.toBe(base);
+  });
+
+  test('a key of the wrong length is refused', () => {
+    expect(code(() => sodium.keyedHash(new Uint8Array(31), text))).toBe('bad_key');
+  });
+});
