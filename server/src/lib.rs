@@ -2,6 +2,9 @@
 
 use axum::{Router, routing::get};
 
+pub mod api;
+pub mod config;
+pub mod logging;
 pub mod ports;
 
 /// Liveness probe. Carries no user data.
