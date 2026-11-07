@@ -6,7 +6,9 @@
     "src/store/**/*.ts",
     "src/sw/**/*.ts",
     "src/net/**/*.ts",
-    "!src/**/*.d.ts"
+    "!src/**/*.d.ts",
+    "!src/sw/sw.ts",
+    "!src/sw/register.ts"
   ],
   "thresholds": {
     "high": 95,

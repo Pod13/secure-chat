@@ -12,6 +12,7 @@ out="${4:-$root/build/out/web}"
 export TZ=UTC LC_ALL=C SOURCE_DATE_EPOCH=0
 [ -d "$root/web/node_modules" ] || (cd "$root/web" && npm ci)
 rm -rf "$out"
-(cd "$root/web" && npx vite build --outDir "$out" --emptyOutDir >/dev/null)
+(cd "$root/web" && npx vite build --outDir "$out" --emptyOutDir >/dev/null \
+  && npx vite build --config vite.sw.config.ts --outDir "$out" >/dev/null)
 node "$root/build/sign-manifest.ts" unsigned "$out" "$version" "$min" "$key"
 echo "built $out"
