@@ -89,7 +89,9 @@ describe('signing flow', () => {
     expect(fileMatches(result.manifest, 'index.html', html, crypto)).toBe(true);
     expect(fileMatches(result.manifest, 'index.html', new Uint8Array(1), crypto)).toBe(false);
   });
+});
 
+describe('signing flow, bad signatures', () => {
   test('a signature that does not match is never written', () => {
     const dir = fixture();
     writeUnsigned(dir, META);
