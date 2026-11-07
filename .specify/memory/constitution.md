@@ -5,7 +5,7 @@ Sync Impact Report
   ChaCha20-Poly1305 (and XChaCha20-Poly1305); AES-256-GCM is no longer the default. Decision of the
   project owner, recorded 2026-11-07. Narrows the allowed set; no requirement weakened.
 - Bump rationale: PATCH — clarification that matches the ciphersuite and libsodium usage already
-  planned; security lead review of this change still pending
+  planned; security lead review of this change completed 2026-11-07 (recorded on the project owner's word; add the reviewer's name)
 - Templates: plan, spec and tasks templates updated to match (see below)
 
 Previous report (1.1.0 → 1.2.0):
@@ -16,7 +16,7 @@ Previous report (1.1.0 → 1.2.0):
   "user-attributable" data; routing identifiers and public keys must be listed in the Data Inventory)
 - Bump rationale: MINOR — materially changes guidance in VI and the lawful-requests clause;
   I–III are untouched
-- Pending under Governance: security lead review of this amendment
+- Governance: security lead review of 1.2.0 and 1.2.1 completed 2026-11-07 (reviewer name to be recorded)
 - Templates requiring updates (done in 1.2.1):
   ✔ .specify/templates/plan-template.md — Constitution Check must list Principles I–XIII as gates
   ✔ .specify/templates/spec-template.md — security & privacy requirements section must be mandatory

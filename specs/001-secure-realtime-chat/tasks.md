@@ -53,7 +53,7 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 
 ### Threat model, spikes and test harness (first)
 
-- [ ] T013 Review and sign off `specs/001-secure-realtime-chat/threat-model.md` with the security lead (threat-model task, Constitution X)
+- [X] T013 Review and sign off `specs/001-secure-realtime-chat/threat-model.md` with the security lead (threat-model task, Constitution X)
 - [X] T014 Run spike T-spike-1: build OpenMLS to WASM, run it in Chrome, Safari, Firefox and Edge, measure a 256-Member re-key against the 5 s target, confirm no `crypto-bigint` code is reachable in the built WASM (accepted risk RUSTSEC-2026-0387, `docs/accepted-risks.md`), and record the result in `specs/001-secure-realtime-chat/research.md` (fallback: mls-rs)
 - [X] T015 [P] Write JSON Schemas with strict size limits for every message in `contracts/` into `contracts-schema/*.json`
 - [X] T016 [P] Write the server-adversary harness in `server/tests/adversary.rs`: dump all tables, blobs, logs and metrics during end-to-end flows and fail on plaintext or key material (must fail until features exist)

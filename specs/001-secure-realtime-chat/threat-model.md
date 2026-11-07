@@ -45,3 +45,11 @@ Covers the seven attackers required by Constitution X. "Residual" means the risk
 15. Recovery signs out every earlier Device, deletes its server records, and removes its leaves from every Conversation.
 16. Adding a Device by link or recovery alerts all the Account's other Devices.
 17. A rejoin request with an invalid certificate chain is rejected.
+
+## Sign-off
+
+| Date | Reviewer | Scope | Outcome |
+|------|----------|-------|---------|
+| 2026-11-07 | Security lead (name to be added) | This threat model, constitution 1.2.1 and the accepted risks in `docs/accepted-risks.md` | Reviewed and accepted. Recorded on the project owner's word; the reviewer should add their name and any conditions here. |
+
+The threat model is reviewed again at the close of each user story (the review task in each phase) and whenever a mitigation changes.

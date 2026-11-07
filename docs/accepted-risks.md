@@ -2,6 +2,8 @@
 
 Each entry is a known issue we have chosen to accept for now. The security lead must review every entry by its date. An entry is removed as soon as it is fixed.
 
+Last reviewed by the security lead: 2026-11-07 (recorded on the project owner's word; add the reviewer's name). The "Review by" dates below still apply.
+
 | ID | Where | Why accepted | Condition to keep accepting | Review by |
 |----|-------|--------------|-----------------------------|-----------|
 | RUSTSEC-2026-0387 (constant-time timing issues) | `crypto-bigint` 0.5.5, via `p256`/`p384` in `openmls_rust_crypto` 0.6.0 | The shipped ciphersuite is X25519, ChaCha20-Poly1305, Ed25519. NIST-curve code is linked but not called. A newer `crypto-bigint` needs a newer `openmls_rust_crypto`. | T014 found the NIST-curve code is linked into the WASM, because the provider chooses the algorithm at runtime. So the `crypto-wasm` wrapper MUST accept exactly one ciphersuite (X25519, ChaCha20-Poly1305, Ed25519) and reject all others, with a test (task T030). Re-check whenever `openmls_rust_crypto` is updated. | 2026-12-07 |
