@@ -50,6 +50,8 @@ Covers the seven attackers required by Constitution X. "Residual" means the risk
 
 | Date | Reviewer | Scope | Outcome |
 |------|----------|-------|---------|
-| _pending_ | Project owner | This threat model, constitution 1.2.1 and the accepted risks in `docs/accepted-risks.md` | Not yet signed off. Fill in the date and name, then mark T013 done. |
+| 2026-11-07 | Tanaka (project owner) | This threat model (T013) | Signed off. |
 
 The threat model is reviewed again at the close of each user story (the review task in each phase) and whenever a mitigation changes.
+
+Signing off the threat model does not cover constitution 1.2.1 or the accepted risks in `docs/accepted-risks.md`; those reviews are recorded separately and are still pending.
