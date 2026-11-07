@@ -82,7 +82,7 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 - [X] T033 [P] Add the typed crypto bridge in `web/src/crypto/bridge.ts` and the libsodium helpers (Argon2id, XChaCha20-Poly1305) in `web/src/crypto/sodium.ts`
 - [X] T034 Write tests then implement the encrypted local vault: data key, Argon2id passcode wrapping, encrypted IndexedDB records in `web/src/store/vault.ts` (tests in `web/tests/vault.test.ts` first)
 - [X] T035 [P] Implement the WebSocket client with automatic reconnect in `web/src/net/socket.ts`
-- [ ] T036 Implement the encrypted outgoing queue with client-generated ids for de-duplication in `web/src/net/outbox.ts`
+- [X] T036 Implement the encrypted outgoing queue with client-generated ids for de-duplication in `web/src/net/outbox.ts`
 - [ ] T037 [P] Add the base React shell, routing, theme and accessible components in `web/src/app/App.tsx` and `web/src/app/components/`
 
 ### Client integrity
