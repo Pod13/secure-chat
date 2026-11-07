@@ -4,6 +4,7 @@
 // here so they can be tested without a browser.
 
 import type { KeyValueStore } from '../ports';
+import { needsUpdate } from './update';
 import { fileMatches, verifyManifest, type Manifest, type ManifestCrypto } from './manifest';
 import { compareVersions } from './version';
 
@@ -23,11 +24,16 @@ export interface GuardDeps {
   /** Fetches a release path from the site's own origin. */
   network(path: string): Promise<NetResponse>;
   store: KeyValueStore;
+  /** The version of this client build; compared with the manifest's minimum. */
+  clientVersion: string;
 }
 
 export type ServeResult =
   | { ok: true; body: Uint8Array; contentType: string }
-  | { ok: false; reason: 'no_manifest' | 'not_listed' | 'hash_mismatch' | 'network' };
+  | {
+      ok: false;
+      reason: 'no_manifest' | 'update_required' | 'not_listed' | 'hash_mismatch' | 'network';
+    };
 
 export type RefreshResult =
   | { ok: true; version: string }
@@ -64,6 +70,11 @@ export class Guard {
     return this.current?.manifest.version;
   }
 
+  /** The oldest client version the current manifest allows. */
+  get minimumVersion(): string | undefined {
+    return this.current?.manifest.minClientVersion;
+  }
+
   /** Restores the last accepted manifest from storage, checking it again. */
   async load(): Promise<boolean> {
     // A missing record decodes to "", which fails verification like any other bad manifest.
@@ -95,6 +106,8 @@ export class Guard {
     if (this.current === undefined) await this.refresh();
     const manifest = this.current?.manifest;
     if (manifest === undefined) return { ok: false, reason: 'no_manifest' };
+    if (needsUpdate(this.deps.clientVersion, manifest))
+      return { ok: false, reason: 'update_required' };
     const path = pathFor(requestPath);
     if (path === undefined || !Object.hasOwn(manifest.files, path)) {
       return { ok: false, reason: 'not_listed' };

@@ -9,6 +9,7 @@ version="${1:?version}"; min="${2:?minClientVersion}"; key="${3:?keyId}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 out="${4:-$root/build/out/web}"
 
+export CLIENT_VERSION="$version"
 export TZ=UTC LC_ALL=C SOURCE_DATE_EPOCH=0
 [ -d "$root/web/node_modules" ] || (cd "$root/web" && npm ci)
 rm -rf "$out"

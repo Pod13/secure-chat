@@ -25,11 +25,16 @@ beforeAll(async () => {
 const bytes = (text: string): Uint8Array => new TextEncoder().encode(text);
 const text = (data: Uint8Array): string => new TextDecoder().decode(data);
 
-function release(version: string, files: Record<string, string>, secretKey = pair.secretKey) {
+function release(
+  version: string,
+  files: Record<string, string>,
+  secretKey = pair.secretKey,
+  minClientVersion = '1.0.0',
+) {
   const manifest: Manifest = {
     v: 1,
     version,
-    minClientVersion: '1.0.0',
+    minClientVersion,
     keyId: 'release-1',
     files: Object.fromEntries(
       Object.entries(files).map(([path, body]) => [path, toBase64Url(sodium.sha256(bytes(body)))]),
@@ -61,13 +66,14 @@ class FakeServer {
   };
 }
 
-function setup(site: Record<string, string>, store = new MemoryStore()) {
+function setup(site: Record<string, string>, store = new MemoryStore(), clientVersion = '1.0.0') {
   const server = new FakeServer(site);
   const guard = new Guard({
     crypto,
     trustedKeys: { 'release-1': pair.publicKey },
     network: server.fetch,
     store,
+    clientVersion,
   });
   return { server, guard, store };
 }
@@ -223,5 +229,38 @@ describe('remembering a release', () => {
     const again = setup(siteFor(V1), first.store);
     expect(await again.guard.load()).toBe(false);
     expect(again.guard.version).toBeUndefined();
+  });
+});
+
+describe('forced update', () => {
+  test('an old client is stopped once the manifest demands a newer one', async () => {
+    const strict = release('2.0.0', { 'index.html': 'new' }, undefined, '1.5.0');
+    const old = setup(siteFor(strict), new MemoryStore(), '1.0.0');
+    expect(await old.guard.serve('/')).toEqual({ ok: false, reason: 'update_required' });
+    expect(await old.guard.serve('/index.html')).toEqual({ ok: false, reason: 'update_required' });
+    expect(old.guard.minimumVersion).toBe('1.5.0');
+  });
+
+  test('a client at the minimum, or newer, keeps running', async () => {
+    const strict = release('2.0.0', { 'index.html': 'new' }, undefined, '1.5.0');
+    for (const version of ['1.5.0', '1.6.0', '2.0.0']) {
+      const current = setup(siteFor(strict), new MemoryStore(), version);
+      expect((await current.guard.serve('/')).ok, version).toBe(true);
+    }
+  });
+
+  test('a later manifest can raise the minimum above a running client', async () => {
+    const { guard, server } = setup(siteFor(V1), new MemoryStore(), '1.0.0');
+    expect((await guard.serve('/')).ok).toBe(true);
+    Object.assign(
+      server.site,
+      siteFor(release('1.1.0', { 'index.html': 'x' }, undefined, '1.1.0')),
+    );
+    await guard.refresh();
+    expect(await guard.serve('/')).toEqual({ ok: false, reason: 'update_required' });
+  });
+
+  test('without a manifest there is no minimum to report', () => {
+    expect(setup({}).guard.minimumVersion).toBeUndefined();
   });
 });

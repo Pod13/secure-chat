@@ -6,10 +6,12 @@ import { createSodium } from '../crypto/sodium';
 import type { KeyValueStore } from '../ports';
 import { webRandom } from '../ports';
 import { Guard, type NetResponse } from './guard';
+import { updateRequiredPage } from './update';
 import { parseKeys } from './trustedKeys';
 
 // Replaced by the build (vite.config.ts) with the pinned public keys.
 declare const __RELEASE_PUBLIC_KEYS__: string;
+declare const __CLIENT_VERSION__: string;
 const TRUSTED_KEYS = parseKeys(__RELEASE_PUBLIC_KEYS__);
 
 // The worker global, typed for the few members used here.
@@ -63,6 +65,7 @@ const guardPromise = createSodium(webRandom).then(async (sodium) => {
     trustedKeys: TRUSTED_KEYS,
     network,
     store: stateStore,
+    clientVersion: __CLIENT_VERSION__,
   });
   await guard.load();
   return guard;
@@ -78,7 +81,11 @@ async function respond(url: string): Promise<Response> {
   const result = await guard.serve(new URL(url).pathname);
   if (result.ok)
     return new Response(result.body.slice(), { headers: { 'content-type': result.contentType } });
-  return new Response(WARNING, {
+  const page =
+    result.reason === 'update_required'
+      ? updateRequiredPage(guard.minimumVersion ?? '', __CLIENT_VERSION__)
+      : WARNING;
+  return new Response(page, {
     status: 503,
     headers: { 'content-type': 'text/html; charset=utf-8' },
   });
