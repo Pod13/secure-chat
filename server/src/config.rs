@@ -36,6 +36,9 @@ pub struct Config {
     pub bind_addr: SocketAddr,
     pub database_url: String,
     pub session_ttl_secs: u64,
+    /// Paths to the TLS certificate chain and private key. There is no plaintext mode.
+    pub tls_cert_path: String,
+    pub tls_key_path: String,
 }
 
 const DEFAULT_BIND: &str = "127.0.0.1:8080";
@@ -57,10 +60,18 @@ impl Config {
         if !database_url.starts_with("postgres://") && !database_url.starts_with("postgresql://") {
             return Err(ConfigError::Invalid("DATABASE_URL"));
         }
+        let tls_cert_path = env
+            .get("TLS_CERT_FILE")
+            .ok_or(ConfigError::Missing("TLS_CERT_FILE"))?;
+        let tls_key_path = env
+            .get("TLS_KEY_FILE")
+            .ok_or(ConfigError::Missing("TLS_KEY_FILE"))?;
         Ok(Self {
             bind_addr,
             database_url,
             session_ttl_secs: session_ttl(env)?,
+            tls_cert_path,
+            tls_key_path,
         })
     }
 }
@@ -82,6 +93,8 @@ impl fmt::Debug for Config {
             .field("bind_addr", &self.bind_addr)
             .field("database_url", &"<redacted>")
             .field("session_ttl_secs", &self.session_ttl_secs)
+            .field("tls_cert_path", &self.tls_cert_path)
+            .field("tls_key_path", &self.tls_key_path)
             .finish()
     }
 }

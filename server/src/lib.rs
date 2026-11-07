@@ -1,6 +1,6 @@
 //! Relay server: routes opaque ciphertext and stores only what the Data Inventory lists.
 
-use axum::{Router, routing::get};
+use axum::{Router, middleware, routing::get};
 
 pub mod abuse;
 pub mod api;
@@ -16,7 +16,9 @@ async fn healthz() -> &'static str {
 
 /// Builds the HTTP router. Endpoints are added story by story from `contracts/http-api.md`.
 pub fn router() -> Router {
-    Router::new().route("/healthz", get(healthz))
+    Router::new()
+        .route("/healthz", get(healthz))
+        .layer(middleware::from_fn(api::headers::add))
 }
 
 #[cfg(test)]

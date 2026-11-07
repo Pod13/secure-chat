@@ -14,10 +14,12 @@ fn env(pairs: &[(&'static str, &'static str)]) -> MapEnv {
 }
 
 const DB: (&str, &str) = ("DATABASE_URL", "postgres://user:hunter2@db/chat");
+const CERT: (&str, &str) = ("TLS_CERT_FILE", "/run/secrets/cert.pem");
+const KEY: (&str, &str) = ("TLS_KEY_FILE", "/run/secrets/key.pem");
 
 #[test]
 fn defaults_apply_when_only_the_database_is_given() {
-    let config = Config::load(&env(&[DB])).unwrap();
+    let config = Config::load(&env(&[DB, CERT, KEY])).unwrap();
     assert_eq!(config.bind_addr.to_string(), "127.0.0.1:8080");
     assert_eq!(config.session_ttl_secs, 900);
 }
@@ -32,7 +34,7 @@ fn the_database_url_is_required() {
 
 #[test]
 fn only_postgres_urls_are_accepted() {
-    let bad = env(&[("DATABASE_URL", "mysql://x")]);
+    let bad = env(&[("DATABASE_URL", "mysql://x"), CERT, KEY]);
     assert_eq!(
         Config::load(&bad).unwrap_err(),
         ConfigError::Invalid("DATABASE_URL")
@@ -40,8 +42,20 @@ fn only_postgres_urls_are_accepted() {
 }
 
 #[test]
+fn there_is_no_plaintext_mode_so_a_certificate_and_key_are_required() {
+    assert_eq!(
+        Config::load(&env(&[DB, KEY])).unwrap_err(),
+        ConfigError::Missing("TLS_CERT_FILE")
+    );
+    assert_eq!(
+        Config::load(&env(&[DB, CERT])).unwrap_err(),
+        ConfigError::Missing("TLS_KEY_FILE")
+    );
+}
+
+#[test]
 fn a_bad_bind_address_is_rejected() {
-    let bad = env(&[DB, ("BIND_ADDR", "not an address")]);
+    let bad = env(&[DB, CERT, KEY, ("BIND_ADDR", "not an address")]);
     assert_eq!(
         Config::load(&bad).unwrap_err(),
         ConfigError::Invalid("BIND_ADDR")
@@ -79,6 +93,8 @@ impl Env for MapEnvOwned {
     fn get(&self, key: &str) -> Option<String> {
         match key {
             "DATABASE_URL" => Some("postgres://u:p@db/chat".to_string()),
+            "TLS_CERT_FILE" => Some("/c".to_string()),
+            "TLS_KEY_FILE" => Some("/k".to_string()),
             "SESSION_TTL_SECS" => Some(self.0.clone()),
             _ => None,
         }
@@ -87,7 +103,7 @@ impl Env for MapEnvOwned {
 
 #[test]
 fn debug_output_never_shows_the_database_password() {
-    let shown = format!("{:?}", Config::load(&env(&[DB])).unwrap());
+    let shown = format!("{:?}", Config::load(&env(&[DB, CERT, KEY])).unwrap());
     assert!(
         !shown.contains("hunter2") && !shown.contains("postgres://"),
         "{shown}"

@@ -60,6 +60,8 @@ Each entry: Decision, Rationale, Alternatives considered. Items marked **verify*
 | ed25519-dalek 2.2.0 | server | verifies Device login signatures; already in the tree through OpenMLS, so one version to track (III) |
 | sha2 | server | hashes session tokens and chains log lines; RustCrypto (III) |
 | getrandom | server | operating-system randomness behind the `Random` port |
+| rustls 0.23 (ring), tokio-rustls, rustls-pki-types | server | TLS 1.3 only, in the server itself; rustls was already in the tree through sqlx (III) |
+| rcgen | server tests only | makes throwaway certificates for TLS tests |
 | Playwright, Vitest, proptest, cargo-fuzz | dev only | tests required by X |
 
 All pinned to exact versions with lockfile hashes, scanned in CI. No analytics, crash reporters or third-party fonts.

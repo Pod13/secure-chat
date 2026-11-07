@@ -68,7 +68,7 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 - [X] T022 Write tests then implement Device challenge-response authentication and 15-minute Device-bound tokens in `server/src/auth/` (tests in `server/tests/auth.rs` first)
 - [X] T023 Implement request validation middleware using `contracts-schema/` in `server/src/api/validate.rs`
 - [X] T024 [P] Implement the rate-limiting framework without content access in `server/src/abuse/limits.rs`
-- [ ] T025 [P] Configure TLS 1.3 only and security headers (HSTS preload, CSP, no third-party origins) in `server/src/api/headers.rs`
+- [X] T025 [P] Configure TLS 1.3 only and security headers (HSTS preload, CSP, no third-party origins) in `server/src/api/headers.rs`
 - [ ] T026 Implement the WebSocket channel and frames from `contracts/realtime-frames.md` in `server/src/api/ws.rs`
 - [ ] T027 Implement the envelope queue with delete-on-ack and 30-day expiry job in `server/src/delivery/queue.rs`
 - [ ] T028 Write tests then implement scheduled retention purges for every Data Inventory row: abuse data (7 days), expired Invites (+30 days), key packages (30 days), audit log (1 year) in `server/src/retention/mod.rs` (tests in `server/tests/retention.rs` first)
