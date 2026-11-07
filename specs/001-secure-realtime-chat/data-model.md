@@ -8,10 +8,9 @@ Vocabulary follows [GLOSSARY.md](../../GLOSSARY.md). Two stores exist: the **ser
 | Field | Type | Notes |
 |-------|------|-------|
 | account_id | random 128-bit | Only identifier; no username, phone or email |
-| identity_public_key | bytes | Long-term identity key |
+| identity_public_key | bytes | Long-term identity key, derived from the Recovery Key. Its private half exists only at sign-up and during recovery, where it signs Device certificates |
 | created_at | date | Day precision; producible to lawful requests (FR-036) |
 | last_connected_at | date | Day precision; producible to lawful requests |
-| invite_used | token hash | Which Invite created it, deleted after 30 days |
 
 ### Device
 | Field | Type | Notes |
@@ -22,6 +21,7 @@ Vocabulary follows [GLOSSARY.md](../../GLOSSARY.md). Two stores exist: the **ser
 | mls_key_packages | list | Public, single-use, replenished by the Device |
 | push_subscription | opaque | Empty-payload wake-up endpoint |
 | linked_at | date | |
+| label_blob | encrypted | Device name, type and the Device's own last-active date, encrypted under the Account label key shared by the Account's Devices; unreadable by the server |
 
 State: `pending-approval` -> `active` -> `unlinked` (record deleted). Approval requires a signature by an existing active Device.
 
@@ -31,6 +31,8 @@ State: `pending-approval` -> `active` -> `unlinked` (record deleted). Approval r
 | token_hash | hash | Maps to a recipient Device queue |
 | device_id | ref | |
 | revoked | bool | Blocks enforced here |
+
+A delivery token also authorises fetching key packages of its Device (`POST /key-packages/fetch`), so the server never learns who is asking.
 
 ### Queued envelope
 | Field | Type | Notes |
@@ -51,8 +53,12 @@ Deleted when the recipient Device acknowledges it, or at expiry.
 | expires_at, max_uses, uses | | Group Invites may also require admin approval, which is enforced by Group admins' Devices, not the server |
 | revoked | bool | |
 
+Redeeming a service Invite increments `uses` only. No link between the Invite and the Account it created is stored or logged.
+
 ### Attachment blob and Backup blob
-Opaque encrypted objects keyed by random IDs. Attachments are deleted when all recipients have fetched them or after the retention limit (30 days). Each Account has at most one Backup blob, overwritten on update, deleted with the Account.
+Opaque encrypted objects keyed by random IDs. Attachments are deleted when all recipients have fetched them or after the retention limit (30 days). Each Account has at most one Backup blob, overwritten on update, deleted with the Account. The Backup carries an `access_token_hash`: the hash of a token derived from the Recovery Key that authorises its download after recovery.
+
+The server hosts no MLS group state: joining a Group and rejoining after recovery are done by a current member's Device with an add commit (research R16).
 
 ## Device-side entities (encrypted in IndexedDB)
 
@@ -62,7 +68,7 @@ Opaque encrypted objects keyed by random IDs. Attachments are deleted when all r
 - **Group**: name, avatar, Members, admin roles, Invite settings (all inside MLS state or encrypted app messages).
 - **Message**: id, sender, body, attachments, reactions, edits, reply reference, status (`sending` | `sent` | `delivered` | `read`), timestamps, expiry.
 - **Outgoing queue entry**: encrypted message waiting for connectivity, with a client-generated id for de-duplication.
-- **Key material**: Device private key, MLS credentials and secrets; wrapped by the data key.
+- **Key material**: Device private key, MLS credentials and secrets; wrapped by the data key; the Account label key (for Device names); the Recovery Key is shown once and never stored.
 
 ## Relationships
 

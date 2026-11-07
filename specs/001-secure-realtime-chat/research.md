@@ -41,7 +41,7 @@ Each entry: Decision, Rationale, Alternatives considered. Items marked **verify*
 
 ## R7. Sealed sender and abuse control
 
-- **Decision**: When two Accounts become Contacts, each side gives the other a random delivery token inside an encrypted message. A sender presents the recipient's token to the server; the server maps the token to a recipient Device queue without learning who sent it. Rate limits apply per token and per recipient, plus per-IP limits on unauthenticated endpoints. Revoking a token is how a block is enforced server-side.
+- **Decision**: When two Accounts become Contacts, each side gives the other a random delivery token inside an encrypted message. A sender presents the recipient's token to the server; the server maps the token to a recipient Device queue without learning who sent it. Rate limits apply per token and per recipient, plus per-IP limits on unauthenticated endpoints. The same token authorises anonymous key-package fetches (`POST /key-packages/fetch`) so the server cannot see who contacts whom. Revoking a token is how a block is enforced server-side.
 - **Rationale**: FR-031a and FR-074 without content or sender identity. Residual leak: the server sees the recipient and timing (documented in the threat model).
 - **Alternatives**: Full sender identification (leaks the social graph); anonymous credentials such as Privacy Pass (stronger, deferred).
 
@@ -60,14 +60,14 @@ All pinned to exact versions with lockfile hashes, scanned in CI. No analytics, 
 
 ## R9. What a fully compromised server can learn or do
 
-- **Learns**: Account IDs and creation dates, Device public keys, last-connection time, recipient Device and timing of each delivery, ciphertext sizes (bucketed), Backup blob existence and size, truncated IP addresses for up to 7 days.
+- **Learns**: that some holder of a delivery token fetched key packages (not who), Account IDs and creation dates, Device public keys, last-connection time, recipient Device and timing of each delivery, ciphertext sizes (bucketed), Backup blob existence and size, truncated IP addresses for up to 7 days.
 - **Cannot learn**: message content, attachment content, Group names and membership (kept in encrypted MLS state), usernames, Contact lists, Safety Codes, Recovery Keys.
 - **Can do**: drop, delay or replay messages (replay is rejected by MLS), refuse service, serve a malicious client to a first-time visitor (R3), withhold a Device's removal from the directory (Safety Code checks mitigate), correlate traffic timing.
 - **Cannot do**: add a Device or key silently (new Devices need approval from an existing Device and trigger contact warnings).
 
 ## R10. Push
 
-- **Decision**: Web Push with an empty payload. Registration reveals to the push provider only that a given browser subscription exists. The service worker wakes, fetches ciphertext, decrypts locally, and shows either a generic notification or an opted-in preview.
+- **Decision**: Web Push with an empty payload. Registration reveals to the push provider only that a given browser subscription exists. The service worker wakes and shows a generic "New message" notification. It does not fetch or decrypt, because the Device key and data key are wrapped by the passcode and are unavailable while the app is locked. Previews are deferred (simplicity, and no way to offer them without weakening local protection).
 - **Rationale**: FR-027. Notification timing is visible to the push provider and cannot be hidden.
 - **Verify**: iOS wake-ups may be throttled; the install guide sets expectations.
 
@@ -82,3 +82,30 @@ All pinned to exact versions with lockfile hashes, scanned in CI. No analytics, 
 - **Simplifications taken**: passcode-only unlock (no WebAuthn); one protocol (MLS) for every Conversation (ADR 0002); one transport per direction (HTTP requests, one WebSocket for delivery); no cache layer, message broker or separate worker service (PostgreSQL holds the queue; expiry is a scheduled query).
 - **Complexity kept, with justification**: the WASM MLS module (no audited browser alternative); sealed-sender delivery tokens (one table, one endpoint; they also carry block enforcement and rate limiting); the signed manifest plus pinning service worker (only way to detect a swapped web client).
 - **Candidates to defer if the schedule needs cuts, none required by this plan**: voice notes, message edits, screenshot blocking, "block on key change" as a separate setting.
+
+## R13. Recovery design
+
+- **Decision**: At sign-up the Device generates a random Recovery Key and shows it once. Distinct HKDF labels derive three values: the Account identity key pair, a Backup encryption key, and a Backup access token (only its hash is stored). The identity private key is used only to sign Device certificates at sign-up and recovery, and is not kept on any Device. Recovery on a new Device re-derives the identity key, signs a certificate for the new Device, and downloads the Backup with the access token. Recovery signs out every earlier Device (server records, tokens and push subscriptions are deleted; earlier Devices receive `device-unlinked` with reason `recovered`). Contacts' Devices remove the Account's stale leaves and add the new one (R16).
+- **Rationale**: The identity key, and so the Safety Code, survives recovery; only the Device changes. Device keys stay separate (II), the server needs no trust (I), and recovery works even without a Backup (identity only, no Contacts, no history). One fewer key than a separate recovery signing key.
+- **Trade-off**: A stolen Recovery Key means full takeover of the Account for future messages. It is the same trust as any account root secret, and the signed-out Devices make the takeover visible to the owner.
+- **Alternatives**: Identity key stored in the Backup (shares one key across Devices); a separate recovery signing key (an extra key and identity change on recovery); an escrowed recovery code (forbidden).
+
+## R14. Operational readiness (Constitution XII)
+
+- **Forced update**: the signed manifest carries a minimum client version; the service worker blocks the app and prompts an update when the installed version is lower.
+- **Signing-key rotation and revocation**: the app pins a list of valid manifest-signing keys and a revocation list that ships inside signed manifests; a manifest signed by a revoked key is rejected.
+- **Server secrets and KMS keys**: a documented rotation procedure with a rehearsal test.
+- **Post-mortem**: a blameless public template in the incident response plan.
+
+## R15. Devices inside encryption groups
+
+- **Decision**: Each Device is its own leaf in every Conversation's MLS group. Linking a Device adds it to every existing Conversation (an add commit from a Device that is already a member). Unlinking removes it from every Conversation (a remove commit). The server's token revocation is a second, separate layer.
+- **Rationale**: Without the remove commit, an unlinked Device keeps decryptable keys for later messages (II).
+
+## R16. Joining and rejoining without server-hosted group state
+
+- **Decision**: The server never holds GroupInfo or any MLS group state. A person joining a Group by Invite redeems it (`POST /invites/redeem`) to get the creator's delivery tokens and key packages, then sends an encrypted join request. A recovered Device sends each Contact a rejoin request (its new key package and Device certificate) using delivery tokens from the Backup. In both cases a current member's Device verifies the request and applies an add commit; for a rejoin it removes the Account's stale leaves in the same commit. Group admins and the Invite's expiry, limits and approval rules are enforced by members' Devices.
+- **Certificates**: A Device certificate is signed by the Account identity key (sign-up, recovery) or by an existing Device (linking). Receivers verify the chain back to the identity key they stored for that Contact.
+- **Rationale**: Adds no server data (Constitution IV) and no new protocol such as external commits. The cost is that joining waits until a member's Device is online, which the UI states.
+- **Alternatives**: External commits with a hosted, encrypted GroupInfo (new server data and endpoints); requiring an admin to be online at redemption (same wait, worse for users).
+- **Key-package exhaustion**: each Device also publishes a last-resort key package, which is reused when single-use packages run out, and fetches are rate limited per token.

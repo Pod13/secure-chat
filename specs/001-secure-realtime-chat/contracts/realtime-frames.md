@@ -9,7 +9,7 @@ One WebSocket per Device at `/v1/ws`, authenticated at connect with the Device t
 | `envelope` | envelope_id, ciphertext, enqueued_at | A queued message for this Device |
 | `queue-empty` | | All backlog delivered |
 | `link-request` | request_id, new device public key | Another Device wants to link; the user approves on this Device |
-| `device-unlinked` | | This Device was unlinked; wipe local data |
+| `device-unlinked` | reason (`unlinked` or `recovered`) | This Device was unlinked; wipe local data. With `recovered`, show that the Account was recovered on another Device |
 | `error` | code | Protocol or limit error |
 
 ## Device to Server

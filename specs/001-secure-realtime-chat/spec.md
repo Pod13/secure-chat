@@ -61,7 +61,7 @@ A user who started on the web installs the app on their phone from a simple, gui
 
 1. **Given** a user on a mobile browser, **When** they open the app, **Then** they are shown a one-step install prompt with instructions specific to their platform.
 2. **Given** an installed mobile app, **When** it is launched, **Then** it opens full-screen without browser controls and works like a native app.
-3. **Given** the installed app is closed, **When** a new message arrives, **Then** the user gets a push notification that does **not** contain the message text or the sender's name unless the user has opted in to previews, which are decrypted on the device.
+3. **Given** the installed app is closed, **When** a new message arrives, **Then** the user gets a push notification that contains no message text and no sender name. Message previews in notifications are not offered in v1.
 
 ---
 
@@ -76,7 +76,7 @@ A user adds a second device (for example phone plus laptop) by approving it from
 **Acceptance Scenarios**:
 
 1. **Given** a user signed in on one device, **When** they start "link new device", **Then** the new device can only be added by approval from an existing device (QR scan or code), never by password alone.
-2. **Given** a user with several linked devices, **When** they view their device list, **Then** they see each device's name, type, and last-active time.
+2. **Given** a user with several linked devices, **When** they view their device list, **Then** they see each device's name, type, and last-connected date.
 3. **Given** a linked device, **When** the user unlinks it from another device, **Then** that device can no longer decrypt new messages and its local data is erased the next time it connects.
 4. **Given** a new device is linked, **When** contacts next message the user, **Then** contacts are notified that a new device was added to that account.
 
@@ -164,6 +164,24 @@ A user blocks unwanted contacts, reports abuse, and controls whether others see 
 
 ---
 
+### User Story 10 - Recover an account after losing every device (Priority: P2)
+
+A user who lost all their devices restores their Account on a new device using the Recovery Key they saved at sign-up, and gets their Contacts and history back if they had turned on Backup.
+
+**Why this priority**: The operator cannot recover accounts by design, so the Recovery Key is the only safety net. It must be simple and it must work.
+
+**Independent Test**: Sign up and save the Recovery Key, turn on Backup, wipe every device, then recover on a fresh browser. The Account works, Contacts see a new-device warning, and history from the last Backup is readable.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user who saved their Recovery Key and turned on Backup, **When** they enter the key on a new device, **Then** their Account is restored, Contacts and history from the last Backup are readable, every earlier device is signed out, and their Contacts see a new-device warning. The new device appears in each Conversation once a current member's device is online.
+2. **Given** a user who saved their Recovery Key but never turned on Backup, **When** they recover, **Then** the Account is restored with empty history and no Contacts, the user is told plainly why, and they reconnect through new Invites.
+3. **Given** a wrong or partial Recovery Key, **When** it is entered, **Then** nothing is revealed and repeated attempts are rate limited.
+4. **Given** an operator with full access to server data, **When** they inspect the Backup and recovery records, **Then** they cannot read the Backup or recover the Account.
+5. **Given** other devices still signed in when recovery happens, **When** they next connect, **Then** they are signed out with a message that the Account was recovered on another device.
+
+---
+
 ### Edge Cases
 
 - A user loses their only device and has no encrypted backup: the account can be recovered only by the method in FR-041; past messages are unrecoverable by design, and the user is told this clearly at sign-up.
@@ -176,7 +194,7 @@ A user blocks unwanted contacts, reports abuse, and controls whether others see 
 - The web app is served from a compromised server: users and auditors must be able to detect that the delivered client code differs from the published version (see FR-033).
 - The device clock is wrong: disappearing timers and message ordering still behave correctly.
 - Browser storage is cleared by the user or the browser: the device is treated as unlinked and must be re-linked; no data is lost from other devices.
-- A very large group (at the member limit) changes membership frequently: re-keying still completes within the target time.
+- A very large group (at the member limit) changes membership frequently: re-keying still completes within 5 seconds (SC-012).
 
 ---
 
@@ -209,9 +227,9 @@ A user blocks unwanted contacts, reports abuse, and controls whether others see 
 - **FR-022**: The system MUST use well-established, publicly reviewed cryptographic protocols and primitives; custom cryptography MUST NOT be used.
 - **FR-023**: All client-server traffic MUST additionally be protected by modern transport encryption with certificate validation; downgrade to unencrypted or weak transport MUST be impossible.
 - **FR-024**: Users MUST be able to verify each contact via a safety code and QR code (Story 2).
-- **FR-025**: Users MUST be warned on any Contact identity-key change and on any new Device added to a Contact's Account. For Verified Contacts, outgoing messages MUST be blocked by default until the user acknowledges; for unverified Contacts the user MUST be warned and acknowledge before sending.
+- **FR-025**: Users MUST be warned on any Contact identity-key change and on any new Device added to a Contact's Account. The Account's own Devices MUST also be alerted when any Device is added, whether by linking or by recovery. For Verified Contacts, outgoing messages MUST be blocked by default until the user acknowledges; for unverified Contacts the user MUST be warned and acknowledge before sending.
 - **FR-026**: Removing a member from a group MUST rotate group keys so the removed member cannot read later messages; new members MUST NOT be able to read messages sent before they joined.
-- **FR-027**: Push notifications MUST NOT carry readable message content or sender identity through third-party push services; any preview MUST be decrypted on the device. Push payloads MUST be an empty wake-up signal with no sender hint and no preview text.
+- **FR-027**: Push notifications MUST NOT carry readable message content or sender identity through third-party push services. Push payloads MUST be an empty wake-up signal with no sender hint and no preview text; message previews in notifications are not offered in v1.
 
 **Server-side data protection (at rest)**
 
@@ -222,13 +240,13 @@ A user blocks unwanted contacts, reports abuse, and controls whether others see 
 - **FR-033**: The web client MUST be delivered in a way that lets users or independent auditors verify that the code they are running matches the published, reviewed version. A client whose code does not match the published version MUST refuse to run instead of loading.
 - **FR-034**: All server storage (databases, file storage, backups) MUST be encrypted at rest, in addition to end-to-end encryption, with keys managed separately from the data.
 - **FR-035**: Server logs MUST NOT contain message content, keys, or attachment data; IP addresses and other identifying connection data MUST NOT be retained beyond what is needed for abuse prevention (default: 7 days maximum).
-- **FR-036**: The operator MUST be able to respond to any lawful data request truthfully with only: account creation date and last connection date.
+- **FR-036**: The operator MUST be able to respond to any lawful data request truthfully with only these user-attributable data: account creation date and last connection date. Routing identifiers and public keys held by the server are listed in the Data Inventory and contain no content, names or Contact lists.
 
 **Device-side data protection (at rest)**
 
 - **FR-040**: All local data (messages, keys, attachments, contact list, search index) MUST be encrypted on the device, with keys held in the platform's secure key storage or derived from the user's passcode.
-- **FR-041**: Account recovery after losing all devices MUST be possible only through a user-held recovery key or encrypted backup created by the user; the operator MUST NOT be able to restore access or content.
-- **FR-042**: Users MUST be able to create an optional end-to-end encrypted backup protected by a Recovery Key only they hold. The Backup MUST cover identity keys, Contacts, Groups and history, and be stored on the server as a single opaque blob.
+- **FR-041**: Account recovery after losing all devices MUST be possible only through a user-held Recovery Key; the operator MUST NOT be able to restore access or content. The Recovery Key is created on the user's device at sign-up, shown once, and never sent to the server in usable form. It restores the Account on a new Device, signs out every earlier Device of the Account, and, if a Backup exists, decrypts it. Contacts MUST see a new-Device warning after recovery (FR-025).
+- **FR-042**: Users MUST be able to create an optional end-to-end encrypted backup protected by a Recovery Key only they hold. The Backup MUST cover Contacts, Group memberships and message history, and be stored on the server as a single opaque blob. Restored Conversations rejoin with fresh encryption keys; no old Device keys are restored.
 - **FR-043**: The app MUST support an app lock (passcode) with a user-selectable auto-lock timeout.
 - **FR-044**: The app MUST hide conversation content in the app switcher and, where the platform allows, block screenshots and screen recording (user can turn off).
 - **FR-045**: Users MUST be able to optionally wipe local data after a set number of failed unlock attempts.
@@ -237,10 +255,10 @@ A user blocks unwanted contacts, reports abuse, and controls whether others see 
 
 **Multi-device**
 
-- **FR-050**: Users MUST be able to link additional devices only by approval from an already-linked device.
+- **FR-050**: Users MUST be able to link additional devices only by approval from an already-linked device, with one exception: recovery with the Recovery Key (Story 10).
 - **FR-051**: Each device MUST have its own keys; compromising one device MUST NOT expose another device's keys.
-- **FR-052**: Users MUST be able to view and remotely unlink any device; unlinked devices MUST lose access immediately.
-- **FR-053**: History on a newly linked device MUST start empty; past messages are not transferred to it in v1.
+- **FR-052**: Users MUST be able to view and remotely unlink any device; unlinked devices MUST lose access immediately, including the ability to decrypt any later message in any Conversation. A newly linked device MUST be added to every existing Conversation and receive later messages.
+- **FR-053**: History on a newly linked device (not a recovered one, which restores the Backup) MUST start empty; past messages are not transferred to it in v1.
 
 **Platforms & installation**
 
@@ -284,7 +302,7 @@ A user blocks unwanted contacts, reports abuse, and controls whether others see 
 - **Message**: Encrypted content plus minimal routing information (recipient device, timestamp); deleted from the server after delivery.
 - **Attachment**: An encrypted file blob stored temporarily on the server; its decryption key travels only inside an encrypted message.
 - **Invite Link**: A shareable token tied to a user or group, with optional expiry, use limit, and approval requirement; revocable.
-- **Encrypted Backup**: Optional user-created backup, encrypted with a recovery key only the user holds.
+- **Encrypted Backup**: Optional user-created backup, encrypted with a key derived from the Recovery Key that only the user holds.
 
 ---
 
@@ -303,10 +321,14 @@ A user blocks unwanted contacts, reports abuse, and controls whether others see 
 - **SC-009**: Zero critical or high-severity findings remain open at public launch.
 - **SC-010**: 85% of test users correctly explain what a safety-code warning means after seeing it once.
 - **SC-011**: The system supports at least 10,000 concurrent users with SC-003 latency targets maintained.
+- **SC-012**: A membership change in a Group of 256 members completes (all remaining members can decrypt new messages) within 5 seconds.
+- **SC-013**: A user who lost every device recovers their Account with the Recovery Key in under 5 minutes, and the operator cannot recover it without the key.
 
 ---
 
 ## Assumptions
+
+- A person joining a Group by Invite, and a recovered device rejoining its Conversations, is added by a current member's device. They wait, with a clear "waiting to be added" message, until such a device is online. The server hosts no Group state.
 
 - Unlocking the app in v1 uses the passcode only. Biometric and hardware-key unlock is deferred to keep the key-handling code small; it can be added later without changing stored data.
 

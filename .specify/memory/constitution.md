@@ -1,19 +1,20 @@
 <!--
 Sync Impact Report
-- Version change: 1.0.0 → 1.1.0
-- Modified principles: IX (cross-reference to XIII only); none weakened or removed
-- Added principles: XIII. Simplicity and Verifiability
-- Added/changed sections: Development Workflow & Quality Gates (plan gate 10, tasks and review
-  simplicity items); Governance (simplicity never overrides I–XII)
-- Removed sections: none
-- Bump rationale: MINOR — new principle and materially expanded workflow guidance
+- Version change: 1.1.0 → 1.2.0
+- Modified principles: VI (explicit exception for recovery with the Recovery Key, which must warn
+  Contacts and existing devices and sign out earlier devices); none weakened or removed
+- Changed sections: Security Requirements & Constraints → Lawful requests (clarified to
+  "user-attributable" data; routing identifiers and public keys must be listed in the Data Inventory)
+- Bump rationale: MINOR — materially changes guidance in VI and the lawful-requests clause;
+  I–III are untouched
+- Pending under Governance: security lead review of this amendment
 - Templates requiring updates (NOT modified by this command; follow-up needed):
   ⚠ .specify/templates/plan-template.md — Constitution Check must list Principles I–XIII as gates
   ⚠ .specify/templates/spec-template.md — security & privacy requirements section must be mandatory
   ⚠ .specify/templates/tasks-template.md — every feature must include threat-model, security-test,
     simplicity-review and review tasks
 - Follow-up TODOs: update the three templates above
-- History: 1.0.0 (2026-11-07) initial ratification
+- History: 1.0.0 (2026-11-07) initial ratification; 1.1.0 (2026-11-07) added Principle XIII
 -->
 
 # Secure Real-Time Chat Constitution
@@ -89,7 +90,7 @@ Metadata is data. Who talks to whom, when, and how often can be as sensitive as 
 
 - Users MUST be able to verify contacts out-of-band (safety numbers and QR codes).
 - Any change to a contact's identity key or device list MUST produce a clear, unmissable warning before the next message is sent.
-- New devices MUST be linkable only by approval from an existing device, never by password or server action alone.
+- New devices MUST be linkable only by approval from an existing device, never by password or server action alone. The single exception is recovery with the user-held Recovery Key (see Account recovery): it MUST warn the account's contacts, notify every existing device, and sign out all earlier devices.
 - The server MUST NOT be able to silently add a device or key to any account. Key-directory changes SHOULD be published to an append-only, publicly auditable transparency log (key transparency).
 
 **Rationale:** E2EE is only as strong as the guarantee that you are encrypting to the right person.
@@ -193,7 +194,7 @@ Simplicity is a security property: code that cannot be read cannot be audited, a
 - Production data MUST NEVER be copied to development or test environments.
 
 **Lawful requests**
-- The system MUST be designed so that the only data the operator can produce is: account creation date and last connection date. Any design that would let more be produced violates Principle I and IV.
+- The system MUST be designed so that the only user-attributable data the operator can produce is: account creation date and last connection date. The routing identifiers and public keys the server needs to deliver messages (account ID, public keys, queue records, abuse data kept for at most 7 days) MUST be listed in the Data Inventory and MUST contain no content, names, or contact lists. Any design that would let more be produced violates Principle I and IV.
 
 **Compliance**
 - The project MUST comply with POPIA, GDPR, and any other applicable data-protection laws. Compliance is a floor, not the goal; this constitution's requirements are stricter.
@@ -252,4 +253,4 @@ Any violation MUST be recorded in the plan's Complexity Tracking table with just
 - Compliance MUST be reviewed at every plan, every pull request touching security-sensitive areas, every release, and in a full constitution audit at least every six months.
 - Any team member may raise a constitution violation; violations block merge and release until resolved.
 
-**Version**: 1.1.0 | **Ratified**: 2026-11-07 | **Last Amended**: 2026-11-07
+**Version**: 1.2.0 | **Ratified**: 2026-11-07 | **Last Amended**: 2026-11-07

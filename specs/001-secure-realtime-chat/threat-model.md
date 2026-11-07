@@ -20,6 +20,11 @@ Covers the seven attackers required by Constitution X. "Residual" means the risk
 | | Screen capture | Content hidden in app switcher; screenshot blocking where the platform allows | iOS cannot block screenshots (warned) |
 | Compromised dependency | Supply-chain code execution | Exact pins, lockfile hashes, SBOM, provenance, review of crypto/auth/client dependencies, CSP | A malicious update in an audited crypto library |
 | Malicious insider | Read data, push a bad client | No plaintext on servers; break-glass access with alerts; signed reproducible builds; two-person release | Insider with signing key and server control, mitigated by public build verification |
+| Compromised server | Information disclosure: learn who contacts whom through key-package fetches | Key packages fetched with a delivery token or Invite token, no account authentication, no requester logged | Timing and IP-prefix correlation within the 7-day abuse window |
+| Stolen Recovery Key | Elevation of privilege: attacker recovers the Account | Contacts warned; every earlier Device is signed out with a visible reason; Backup holds no Device or MLS keys; recovery attempts rate limited | Attacker with the key reads the last Backup and receives future messages until the owner recovers again |
+| Forged rejoin request | Spoofing: someone claims to be a recovered Device | Contacts' Devices verify the Device certificate chain to the stored identity key before adding it | Contacts who ignore the new-Device warning |
+| Compromised signing key | Tampering: malicious client signed by a stolen key | Key pinning with rotation and revocation list; forced update floor | Window between theft and revocation |
+| Unlinked Device | Information disclosure: still decrypts later messages | Remove commit from every Conversation group plus token revocation | A device offline during removal keeps already-received messages |
 
 ## Security tests required (written first)
 
@@ -30,3 +35,13 @@ Covers the seven attackers required by Constitution X. "Residual" means the risk
 5. A client-integrity test shows the service worker refuses an asset not in the manifest.
 6. A local-storage test shows no readable data in IndexedDB or caches with the app locked.
 7. Fuzzing covers every network parser and the MLS message handling.
+8. Retention jobs purge every Data Inventory row at its stated age.
+9. Account creation leaves no stored or logged link between the Invite and the new Account.
+10. A key-package fetch needs no account authentication and logs no requester.
+11. After unlinking, the Device is removed from every Conversation and decrypts 0% of later messages.
+12. The server cannot derive the Recovery Key, the identity private key or the Backup key from stored data.
+13. A manifest signed by a revoked key, or below the minimum version, is rejected by the service worker.
+14. The lawful-request export returns only account creation date and last connection date.
+15. Recovery signs out every earlier Device, deletes its server records, and removes its leaves from every Conversation.
+16. Adding a Device by link or recovery alerts all the Account's other Devices.
+17. A rejoin request with an invalid certificate chain is rejected.

@@ -35,6 +35,10 @@ Lock the app, copy IndexedDB, and confirm nothing is readable. Set a 5-minute ti
 
 Serve a modified asset from the server; confirm the service worker refuses to load it and shows a clear warning.
 
+## Scenario 7: Recovery (Story 10)
+
+Sign up and save the Recovery Key, turn on Backup, send messages, then wipe every Device. Recover on a fresh browser with the key: the Account works, history from the last Backup is readable, and Contacts see a new-Device warning. Keep one other Device signed in beforehand and confirm it is signed out with an explanation. Repeat with a wrong key and confirm nothing is revealed.
+
 ## Test suites
 
-Unit and contract tests (Vitest, cargo test), property tests (proptest), fuzzers (cargo-fuzz) on parsers and MLS handling, Playwright end-to-end for Scenarios 1–6, plus the server-adversary harness. Security tests are written before implementation (Constitution X).
+Unit and contract tests (Vitest, cargo test), property tests (proptest), fuzzers (cargo-fuzz) on parsers and MLS handling, Playwright end-to-end for Scenarios 1–7, plus the server-adversary harness. Security tests are written before implementation (Constitution X).

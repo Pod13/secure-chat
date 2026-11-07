@@ -6,7 +6,7 @@
 
 ## Summary
 
-An invite-only, end-to-end encrypted chat delivered as an installable PWA (web, Android, iPhone). The browser client does all cryptography and holds all keys; a Rust relay server routes opaque ciphertext, queues it until delivery, and stores only the metadata listed in the Data Inventory. Every Conversation, 1:1 or Group, uses MLS (RFC 9420). The design follows Constitution XIII: the smallest set of parts, with security-critical logic written as deterministic code that tests can verify. This replaces the earlier "Signal for 1:1" idea, because libsignal has no supported browser build (see [research.md](research.md) R2).
+An invite-only, end-to-end encrypted chat delivered as an installable PWA (web, Android, iPhone). The browser client does all cryptography and holds all keys; a Rust relay server routes opaque ciphertext, queues it until delivery, and stores only the metadata listed in the Data Inventory. Every Conversation, 1:1 or Group, uses MLS (RFC 9420); each Device is its own member of every group (research R15). Recovery uses a Recovery Key that derives the Account identity key, a Backup key and a Backup access token (R13); joining and rejoining are done by a current member's Device (R16). The design follows Constitution XIII: the smallest set of parts, with security-critical logic written as deterministic code that tests can verify. This replaces the earlier "Signal for 1:1" idea, because libsignal has no supported browser build (see [research.md](research.md) R2).
 
 **Framework recommendation (you asked for Next.js, open to advice):** the client is a Vite + React + TypeScript single-page app, not Next.js. Constitution VII needs a strict CSP, Subresource Integrity, reproducible builds and a pinned asset manifest, and IX asks for a minimal dependency tree. Next.js's server rendering, inline bootstrap scripts and larger dependency tree work against all three. Next.js with `output: 'export'` is a viable fallback if you want React Server Components' tooling and accept hash-based CSP for its inline scripts; reasoning in [research.md](research.md) R1.
 
@@ -76,8 +76,13 @@ server/                      # Rust relay server
 │   ├── auth/                # device challenge-response, short-lived tokens
 │   ├── delivery/            # queues, sealed-sender envelopes, expiry
 │   ├── blobs/               # attachments and backups (opaque)
-│   └── abuse/               # rate limits without content access
+│   ├── abuse/               # rate limits without content access
+│   ├── accounts/            # accounts, devices, Invites, recovery
+│   ├── retention/           # scheduled purges for every Data Inventory row
+│   └── ports.rs             # injected clock, randomness, storage, network
 ├── migrations/
+├── deploy/                  # storage, KMS and key-rotation runbooks
+├── fuzz/                    # fuzz targets for network parsers
 └── tests/
 
 crypto-wasm/                 # Rust crate -> WASM: OpenMLS wrapper, only crypto entry point for the client

@@ -37,11 +37,11 @@ The state of a Contact whose Safety Code the Account holder has confirmed. A key
 _Avoid_: Trusted
 
 **Recovery Key**:
-A secret only the Account holder keeps, which is the sole way to restore an Account or Backup after losing every Device.
+A secret created at sign-up and kept only by the Account holder; it is the sole way to restore an Account, and to decrypt a Backup, after losing every Device.
 _Avoid_: Master key, password reset
 
 **Backup**:
-An optional blob holding identity keys, Contacts, Groups and history, encrypted with the Recovery Key.
+An optional blob holding Contacts, Group memberships and history, encrypted with a key derived from the Recovery Key.
 _Avoid_: Export, sync
 
 **Invite**:
