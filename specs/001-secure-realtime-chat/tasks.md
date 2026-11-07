@@ -31,10 +31,10 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 **Purpose**: Project initialization and supply-chain controls
 
 - [X] T001 Create the repository layout from plan.md: `server/`, `crypto-wasm/`, `web/`, `contracts-schema/`, `build/`, `docs/`
-- [ ] T002 [P] Initialize the Rust workspace in `server/Cargo.toml` with axum, tokio and sqlx pinned to exact versions, and commit `Cargo.lock`
-- [ ] T003 [P] Initialize the `crypto-wasm/Cargo.toml` crate with OpenMLS pinned to an exact version
+- [X] T002 [P] Initialize the Rust workspace in `server/Cargo.toml` with axum, tokio and sqlx pinned to exact versions, and commit `Cargo.lock`
+- [X] T003 [P] Initialize the `crypto-wasm/Cargo.toml` crate with OpenMLS pinned to an exact version
 - [X] T004 [P] Initialize the Vite + React + TypeScript app in `web/package.json` with exact version pins, strict `tsconfig.json`, and a lockfile with integrity hashes
-- [ ] T005 [P] Configure clippy, rustfmt, ESLint and Prettier in `server/clippy.toml`, `web/.eslintrc.cjs` and `web/.prettierrc`, with complexity limits that fail CI: cyclomatic complexity ≤ 10, ≤ 50 lines per function, ≤ 400 lines per file, and `forbid(unsafe_code)` outside reviewed, justified modules
+- [X] T005 [P] Configure clippy, rustfmt, ESLint and Prettier in `server/clippy.toml`, `web/.eslintrc.cjs` and `web/.prettierrc`, with complexity limits that fail CI: cyclomatic complexity ≤ 10, ≤ 50 lines per function, ≤ 400 lines per file, and `forbid(unsafe_code)` outside reviewed, justified modules
 - [X] T006 [P] Create the CI pipeline in `.github/workflows/ci.yml` running SAST, dependency scanning, secret scanning, unit and security tests; it cannot be bypassed
 - [ ] T007 [P] Add CI coverage thresholds (100% branch coverage for `crypto-wasm/`, `server/src/auth/`, `web/src/crypto/`, `web/src/store/`, `web/src/sw/`, `build/`) and mutation testing with cargo-mutants and Stryker in `.github/workflows/ci.yml` and `docs/testing.md`
 - [X] T008 [P] Add dependency policy in `server/deny.toml` and `web/.npmrc` plus SBOM generation in `build/sbom.sh`
@@ -54,7 +54,7 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 ### Threat model, spikes and test harness (first)
 
 - [ ] T013 Review and sign off `specs/001-secure-realtime-chat/threat-model.md` with the security lead (threat-model task, Constitution X)
-- [ ] T014 Run spike T-spike-1: build OpenMLS to WASM, run it in Chrome, Safari, Firefox and Edge, measure a 256-Member re-key against the 5 s target, and record the result in `specs/001-secure-realtime-chat/research.md` (fallback: mls-rs)
+- [ ] T014 Run spike T-spike-1: build OpenMLS to WASM, run it in Chrome, Safari, Firefox and Edge, measure a 256-Member re-key against the 5 s target, confirm no `crypto-bigint` code is reachable in the built WASM (accepted risk RUSTSEC-2026-0387, `docs/accepted-risks.md`), and record the result in `specs/001-secure-realtime-chat/research.md` (fallback: mls-rs)
 - [ ] T015 [P] Write JSON Schemas with strict size limits for every message in `contracts/` into `contracts-schema/*.json`
 - [ ] T016 [P] Write the server-adversary harness in `server/tests/adversary.rs`: dump all tables, blobs, logs and metrics during end-to-end flows and fail on plaintext or key material (must fail until features exist)
 - [ ] T017 [P] Write schema-validation security tests (oversized, unknown-field and malformed inputs) in `server/tests/validation.rs`

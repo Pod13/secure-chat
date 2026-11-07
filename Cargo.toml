@@ -1,0 +1,19 @@
+[workspace]
+resolver = "3"
+members = ["server", "crypto-wasm"]
+exclude = ["spikes"]
+
+[workspace.package]
+edition = "2024"
+publish = false
+
+# Constitution X and XIII: no unsafe code, bounded complexity. CI runs clippy with -D warnings.
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+cognitive_complexity = "deny"
+too_many_lines = "deny"
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"

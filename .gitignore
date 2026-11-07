@@ -57,3 +57,6 @@ pgdata/
 *.swp
 .DS_Store
 Thumbs.db
+
+# Spike build output
+spikes/**/pkg/

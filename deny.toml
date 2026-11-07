@@ -1,0 +1,28 @@
+# cargo-deny policy (Constitution IX): known-vulnerable, unmaintained, unlicensed or
+# unexpected-source dependencies fail CI.
+[advisories]
+version = 2
+yanked = "deny"
+# Accepted risks. Each needs a written reason and a review date; see docs/accepted-risks.md.
+ignore = [
+  { id = "RUSTSEC-2026-0387", reason = "crypto-bigint 0.5.5 comes from p256/p384 inside openmls_rust_crypto 0.6.0. Our ciphersuite uses X25519/Ed25519, so the NIST-curve code is not called. Confirm it is absent from the built WASM (task T014). Review by 2026-12-07." },
+  { id = "RUSTSEC-2026-0173", reason = "proc-macro-error2 is a compile-time macro crate reached through libcrux/hax-lib; it is not part of the shipped code. No upgrade exists. Review by 2026-12-07." },
+]
+
+[licenses]
+version = 2
+allow = ["MIT", "Apache-2.0", "Apache-2.0 WITH LLVM-exception", "BSD-2-Clause", "BSD-3-Clause", "ISC", "Unicode-3.0", "Zlib", "MPL-2.0", "CDLA-Permissive-2.0"]
+confidence-threshold = 0.9
+
+# Our own crates are not published.
+[licenses.private]
+ignore = true
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
