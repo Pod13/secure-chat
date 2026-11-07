@@ -10,6 +10,9 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 out="${4:-$root/build/out/web}"
 
 export CLIENT_VERSION="$version"
+# Public key lists come from build/signing-keys.json unless the caller overrides them.
+export RELEASE_PUBLIC_KEYS="${RELEASE_PUBLIC_KEYS:-$(node "$root/build/rotate-signing-key.ts" trusted)}"
+export RELEASE_REVOKED_KEYS="${RELEASE_REVOKED_KEYS:-$(node "$root/build/rotate-signing-key.ts" revoked)}"
 export TZ=UTC LC_ALL=C SOURCE_DATE_EPOCH=0
 [ -d "$root/web/node_modules" ] || (cd "$root/web" && npm ci)
 rm -rf "$out"

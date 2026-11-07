@@ -4,12 +4,20 @@
 // here so they can be tested without a browser.
 
 import type { KeyValueStore } from '../ports';
+import { activeKeys, advance, decodeState, encodeState, initialState, type KeyState } from './keys';
 import { needsUpdate } from './update';
-import { fileMatches, verifyManifest, type Manifest, type ManifestCrypto } from './manifest';
+import {
+  fileMatches,
+  verifyManifest,
+  type Manifest,
+  type ManifestCrypto,
+  type VerifyFailure,
+} from './manifest';
 import { compareVersions } from './version';
 
 const MANIFEST_PATH = 'manifest.json';
 const STORE_KEY = 'sw:manifest';
+const KEYS_KEY = 'sw:keys';
 
 export interface NetResponse {
   status: number;
@@ -19,8 +27,10 @@ export interface NetResponse {
 
 export interface GuardDeps {
   crypto: ManifestCrypto;
-  /** Public keys the app trusts, by key id. */
+  /** Public keys pinned into this build, by key id. */
   trustedKeys: Readonly<Record<string, Uint8Array>>;
+  /** Key ids pinned as revoked in this build. */
+  pinnedRevoked?: readonly string[];
   /** Fetches a release path from the site's own origin. */
   network(path: string): Promise<NetResponse>;
   store: KeyValueStore;
@@ -39,14 +49,7 @@ export type RefreshResult =
   | { ok: true; version: string }
   | {
       ok: false;
-      reason:
-        | 'network'
-        | 'malformed'
-        | 'unknown_key'
-        | 'bad_signature'
-        | 'bad_manifest'
-        | 'downgrade'
-        | 'conflict';
+      reason: VerifyFailure | 'network' | 'downgrade' | 'conflict' | 'revocation_removed';
     };
 
 /** Turns a request path into a release path, or `undefined` if it could point outside. */
@@ -63,8 +66,11 @@ export function pathFor(requestPath: string): string | undefined {
 
 export class Guard {
   private current: { manifest: Manifest; text: string } | undefined;
+  private keys: KeyState;
 
-  constructor(private readonly deps: GuardDeps) {}
+  constructor(private readonly deps: GuardDeps) {
+    this.keys = initialState(deps.trustedKeys, deps.pinnedRevoked ?? []);
+  }
 
   get version(): string | undefined {
     return this.current?.manifest.version;
@@ -79,8 +85,12 @@ export class Guard {
   async load(): Promise<boolean> {
     // A missing record decodes to "", which fails verification like any other bad manifest.
     const text = new TextDecoder().decode(await this.deps.store.get(STORE_KEY));
-    const result = verifyManifest(text, this.deps.trustedKeys, this.deps.crypto);
-    if (result.ok) this.current = { manifest: result.manifest, text };
+    const saved = decodeState(await this.deps.store.get(KEYS_KEY), this.keys);
+    const result = this.verify(text, saved);
+    if (result.ok) {
+      this.current = { manifest: result.manifest, text };
+      this.keys = saved;
+    }
     return result.ok;
   }
 
@@ -89,8 +99,10 @@ export class Guard {
     const fetched = await this.tryFetch(MANIFEST_PATH);
     if (fetched === undefined) return { ok: false, reason: 'network' };
     const text = new TextDecoder().decode(fetched.body);
-    const result = verifyManifest(text, this.deps.trustedKeys, this.deps.crypto);
+    const result = this.verify(text, this.keys);
     if (!result.ok) return result;
+    const nextKeys = advance(this.keys, result.manifest);
+    if (nextKeys === undefined) return { ok: false, reason: 'revocation_removed' };
     const previous = this.current;
     if (previous !== undefined) {
       const order = compareVersions(result.manifest.version, previous.manifest.version);
@@ -98,8 +110,14 @@ export class Guard {
       if (order === 0 && previous.text !== text) return { ok: false, reason: 'conflict' };
     }
     this.current = { manifest: result.manifest, text };
+    this.keys = nextKeys;
     await this.deps.store.put(STORE_KEY, new TextEncoder().encode(text));
+    await this.deps.store.put(KEYS_KEY, encodeState(nextKeys));
     return { ok: true, version: result.manifest.version };
+  }
+
+  private verify(text: string, keys: KeyState) {
+    return verifyManifest(text, activeKeys(keys), this.deps.crypto, keys.revoked);
   }
 
   async serve(requestPath: string): Promise<ServeResult> {

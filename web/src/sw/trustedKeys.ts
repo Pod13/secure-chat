@@ -16,3 +16,8 @@ export function parseKeys(spec: string): Record<string, Uint8Array> {
   }
   return keys;
 }
+
+/** Parses "id,id2" into a list of well-formed key ids. */
+export function parseRevoked(spec: string): string[] {
+  return spec.split(',').filter((id) => /^[a-z0-9-]{1,32}$/.test(id));
+}

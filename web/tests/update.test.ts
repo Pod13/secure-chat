@@ -7,6 +7,8 @@ const manifest = (minClientVersion: string) => ({
   version: '9.9.9',
   minClientVersion,
   keyId: 'k',
+  trustedKeys: {},
+  revokedKeys: [],
   files: {},
 });
 

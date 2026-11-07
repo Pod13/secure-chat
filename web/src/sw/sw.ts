@@ -7,12 +7,14 @@ import type { KeyValueStore } from '../ports';
 import { webRandom } from '../ports';
 import { Guard, type NetResponse } from './guard';
 import { updateRequiredPage } from './update';
-import { parseKeys } from './trustedKeys';
+import { parseKeys, parseRevoked } from './trustedKeys';
 
 // Replaced by the build (vite.config.ts) with the pinned public keys.
 declare const __RELEASE_PUBLIC_KEYS__: string;
+declare const __RELEASE_REVOKED_KEYS__: string;
 declare const __CLIENT_VERSION__: string;
 const TRUSTED_KEYS = parseKeys(__RELEASE_PUBLIC_KEYS__);
+const PINNED_REVOKED = parseRevoked(__RELEASE_REVOKED_KEYS__);
 
 // The worker global, typed for the few members used here.
 interface WorkerScope {
@@ -63,6 +65,7 @@ const guardPromise = createSodium(webRandom).then(async (sodium) => {
   const guard = new Guard({
     crypto: { sha256: sodium.sha256, verify: sodium.verifyDetached },
     trustedKeys: TRUSTED_KEYS,
+    pinnedRevoked: PINNED_REVOKED,
     network,
     store: stateStore,
     clientVersion: __CLIENT_VERSION__,

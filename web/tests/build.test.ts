@@ -34,7 +34,13 @@ function fixture(): string {
   return dir;
 }
 
-const META = { version: '1.2.3', minClientVersion: '1.0.0', keyId: 'release-1' };
+const META = {
+  version: '1.2.3',
+  minClientVersion: '1.0.0',
+  keyId: 'release-1',
+  trustedKeys: {},
+  revokedKeys: [],
+};
 
 describe('manifest text', () => {
   test('lists every file with its hash, sorted, in canonical form', () => {

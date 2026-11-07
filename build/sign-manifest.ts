@@ -20,6 +20,10 @@ export interface Meta {
   version: string;
   minClientVersion: string;
   keyId: string;
+  /** Public keys trusted from this release on, by key id (base64url). */
+  trustedKeys: Record<string, string>;
+  /** Key ids revoked for good; every release repeats all earlier ones. */
+  revokedKeys: string[];
 }
 
 /** Files in a release directory, as sorted "/"-separated paths, without the manifest files. */
@@ -102,7 +106,22 @@ function main(args: string[]): void {
   const [command, dir, ...rest] = args;
   if (command === "unsigned" && dir !== undefined && rest.length === 3) {
     const [version, minClientVersion, keyId] = rest as [string, string, string];
-    writeUnsigned(dir, { version, minClientVersion, keyId });
+    const trustedKeys = Object.fromEntries(
+      (process.env.RELEASE_PUBLIC_KEYS ?? "")
+        .split(",")
+        .filter(Boolean)
+        .map((entry) => entry.split(":") as [string, string]),
+    );
+    const revokedKeys = (process.env.RELEASE_REVOKED_KEYS ?? "")
+      .split(",")
+      .filter(Boolean);
+    writeUnsigned(dir, {
+      version,
+      minClientVersion,
+      keyId,
+      trustedKeys,
+      revokedKeys,
+    });
   } else if (command === "attach" && dir !== undefined && rest.length === 2) {
     const [signatureFile, keyFile] = rest as [string, string];
     const decode = (file: string) =>

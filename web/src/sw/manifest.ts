@@ -13,6 +13,10 @@ export interface Manifest {
   /** The oldest client version still allowed to run (forced update, T042). */
   minClientVersion: string;
   keyId: string;
+  /** Public keys (base64url, by key id) trusted from this release on. */
+  trustedKeys: Record<string, string>;
+  /** Key ids that must never be trusted again. Each release repeats all earlier ones. */
+  revokedKeys: string[];
   /** Path (relative to the site root) to the SHA-256 of the file, base64url. */
   files: Record<string, string>;
 }
@@ -22,12 +26,14 @@ export interface ManifestCrypto {
   verify(signature: Uint8Array, message: Uint8Array, publicKey: Uint8Array): boolean;
 }
 
-export type VerifyFailure = 'malformed' | 'unknown_key' | 'bad_signature' | 'bad_manifest';
+export type VerifyFailure =
+  'malformed' | 'unknown_key' | 'revoked_key' | 'bad_signature' | 'bad_manifest';
 export type VerifyResult = { ok: true; manifest: Manifest } | { ok: false; reason: VerifyFailure };
 
 const VERSION = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 const HASH_CHARS = 43;
 const SIGNATURE_BYTES = 64;
+const KEY_ID = /^[a-z0-9-]{1,32}$/;
 
 /** JSON with sorted keys and no whitespace: the same data always gives the same text. */
 export function canonicalJson(value: unknown): string {
@@ -59,13 +65,26 @@ function isFileList(files: unknown): boolean {
   return entries.length > 0 && entries.every(valid);
 }
 
+function isKeyList(keys: unknown): boolean {
+  if (typeof keys !== 'object' || keys === null || Array.isArray(keys)) return false;
+  const valid = ([id, key]: [string, unknown]) =>
+    KEY_ID.test(id) && typeof key === 'string' && fromBase64Url(key)?.length === 32;
+  return Object.entries(keys).every(valid);
+}
+
+function isRevocationList(list: unknown): boolean {
+  return Array.isArray(list) && list.every((id) => typeof id === 'string' && KEY_ID.test(id));
+}
+
 /** `m` is an object whose key id is already trusted, so only the other fields are checked. */
 function isManifest(m: Record<string, unknown>): m is Record<string, unknown> & Manifest {
   return (
-    Object.keys(m).length === 5 &&
+    Object.keys(m).length === 7 &&
     m.v === 1 &&
     isVersion(m.version) &&
     isVersion(m.minClientVersion) &&
+    isKeyList(m.trustedKeys) &&
+    isRevocationList(m.revokedKeys) &&
     isFileList(m.files)
   );
 }
@@ -102,13 +121,16 @@ export function verifyManifest(
   text: string,
   trustedKeys: Readonly<Record<string, Uint8Array>>,
   crypto: ManifestCrypto,
+  revoked: readonly string[] = [],
 ): VerifyResult {
   const signed = parseSigned(text);
   if (signed === undefined) return { ok: false, reason: 'malformed' };
   const content = contentOf(signed.manifest);
   const keyId = (content as { keyId?: unknown } | undefined)?.keyId;
-  const key =
-    typeof keyId === 'string' && Object.hasOwn(trustedKeys, keyId) ? trustedKeys[keyId] : undefined;
+  if (typeof keyId === 'string' && revoked.includes(keyId)) {
+    return { ok: false, reason: 'revoked_key' };
+  }
+  const key = lookup(trustedKeys, keyId);
   if (key === undefined) return { ok: false, reason: 'unknown_key' };
   if (!crypto.verify(signed.signature, new TextEncoder().encode(signed.manifest), key)) {
     return { ok: false, reason: 'bad_signature' };
@@ -117,6 +139,10 @@ export function verifyManifest(
   return isManifest(fields)
     ? { ok: true, manifest: fields }
     : { ok: false, reason: 'bad_manifest' };
+}
+
+function lookup(keys: Readonly<Record<string, Uint8Array>>, id: unknown): Uint8Array | undefined {
+  return typeof id === 'string' && Object.hasOwn(keys, id) ? keys[id] : undefined;
 }
 
 /** True when `path` is listed and `bytes` hash to the listed value. Parsed JSON has no inherited names that could match a hash. */

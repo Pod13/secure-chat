@@ -16,7 +16,7 @@ on:
         description: 'Base64url Ed25519 signature over manifest.unsigned.txt, made in the HSM'
         required: true
       key_id:
-        description: 'Id of the signing key used (must be in RELEASE_PUBLIC_KEYS)'
+        description: 'Id of the signing key used (must be in build/signing-keys.json)'
         required: true
 
 permissions:
@@ -44,7 +44,6 @@ jobs:
         working-directory: web
       - name: Build
         env:
-          RELEASE_PUBLIC_KEYS: ${{ vars.RELEASE_PUBLIC_KEYS }}
           VERSION: ${{ github.ref_name }}
           MIN_CLIENT_VERSION: ${{ vars.MIN_CLIENT_VERSION }}
           KEY_ID: ${{ vars.RELEASE_KEY_ID }}
@@ -83,12 +82,11 @@ jobs:
         env:
           SIGNATURE: ${{ inputs.signature }}
           KEY_ID: ${{ inputs.key_id }}
-          RELEASE_PUBLIC_KEYS: ${{ vars.RELEASE_PUBLIC_KEYS }}
         run: |
           set -euo pipefail
           printf '%s' "$SIGNATURE" > signature.txt
-          # Find the public key for KEY_ID in "id:key,id2:key2".
-          printf '%s' "$RELEASE_PUBLIC_KEYS" | tr ',' '\n' | awk -F: -v id="$KEY_ID" '$1 == id { printf "%s", $2 }' > public-key.txt
+          # Find the public key for KEY_ID in build/signing-keys.json (public data).
+          node build/rotate-signing-key.ts trusted | tr ',' '\n' | awk -F: -v id="$KEY_ID" '$1 == id { printf "%s", $2 }' > public-key.txt
           test -s public-key.txt
           node build/sign-manifest.ts attach release signature.txt public-key.txt
       - name: Attest the signed release

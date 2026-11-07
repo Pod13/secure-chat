@@ -29,6 +29,8 @@ function manifest(overrides: Partial<Manifest> = {}): Manifest {
     version: '1.2.3',
     minClientVersion: '1.0.0',
     keyId: 'release-1',
+    trustedKeys: {},
+    revokedKeys: [],
     files: { 'index.html': toBase64Url(sodium.sha256(bytes('<html>'))) },
     ...overrides,
   };
@@ -182,6 +184,67 @@ describe('verifyManifest, bad content', () => {
     expect(verifyManifest(signed, trusted(), crypto)).toEqual({
       ok: false,
       reason: 'unknown_key',
+    });
+  });
+});
+
+describe('key lists', () => {
+  const key = 'A'.repeat(43);
+
+  test('accepts new trusted keys and revocations', () => {
+    const m = manifest({ trustedKeys: { 'release-2': key }, revokedKeys: ['old-1', 'old-2'] });
+    expect(verifyManifest(sign(m), trusted(), crypto)).toEqual({ ok: true, manifest: m });
+  });
+
+  test('key ids may be up to 32 characters of a-z, 0-9 and dashes', () => {
+    const id = 'a-1'.repeat(10) + 'ab';
+    expect(id.length).toBe(32);
+    const ok = manifest({ trustedKeys: { [id]: key }, revokedKeys: [id] });
+    expect(verifyManifest(sign(ok), trusted(), crypto).ok).toBe(true);
+    for (const bad of ['a'.repeat(33), 'UP', 'a b', '']) {
+      for (const change of [{ trustedKeys: { [bad]: key } }, { revokedKeys: [bad] }]) {
+        expect(verifyManifest(sign(manifest(change)), trusted(), crypto).ok, bad).toBe(false);
+      }
+    }
+  });
+});
+
+describe('key lists, malformed', () => {
+  const key = 'A'.repeat(43);
+
+  test('refuses key lists that are malformed', () => {
+    const bad: Partial<Manifest>[] = [
+      { trustedKeys: { 'Bad Id': key } },
+      { trustedKeys: { 'release-2': 'short' } },
+      { trustedKeys: { 'release-2': 'A'.repeat(44) } },
+      { trustedKeys: { 'release-2': 5 as never } },
+      { trustedKeys: null as never },
+      { trustedKeys: [] as never },
+      { revokedKeys: 'old' as never },
+      { revokedKeys: [5 as never] },
+      { revokedKeys: ['Bad Id'] },
+      { revokedKeys: null as never },
+    ];
+    for (const change of bad) {
+      expect(
+        verifyManifest(sign(manifest(change)), trusted(), crypto),
+        JSON.stringify(change),
+      ).toEqual({
+        ok: false,
+        reason: 'bad_manifest',
+      });
+    }
+  });
+
+  test('a revoked signing key is refused even though it is in the trusted list', () => {
+    const signed = sign(manifest());
+    expect(verifyManifest(signed, trusted(), crypto, ['release-1'])).toEqual({
+      ok: false,
+      reason: 'revoked_key',
+    });
+    expect(verifyManifest(signed, trusted(), crypto, ['other'])).toEqual({
+      ok: true,
+      manifest: manifest(),
     });
   });
 });

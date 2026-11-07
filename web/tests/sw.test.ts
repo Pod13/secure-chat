@@ -30,12 +30,15 @@ function release(
   files: Record<string, string>,
   secretKey = pair.secretKey,
   minClientVersion = '1.0.0',
+  keys: { keyId?: string; trustedKeys?: Record<string, string>; revokedKeys?: string[] } = {},
 ) {
   const manifest: Manifest = {
     v: 1,
     version,
     minClientVersion,
-    keyId: 'release-1',
+    keyId: keys.keyId ?? 'release-1',
+    trustedKeys: keys.trustedKeys ?? {},
+    revokedKeys: keys.revokedKeys ?? [],
     files: Object.fromEntries(
       Object.entries(files).map(([path, body]) => [path, toBase64Url(sodium.sha256(bytes(body)))]),
     ),
@@ -262,5 +265,100 @@ describe('forced update', () => {
 
   test('without a manifest there is no minimum to report', () => {
     expect(setup({}).guard.minimumVersion).toBeUndefined();
+  });
+});
+
+describe('key rotation and revocation', () => {
+  const second = () => sodium.signingKeyPair(new Uint8Array(32).fill(8));
+
+  test('a release signed by a newly introduced key is accepted, and the key survives a restart', async () => {
+    const next = second();
+    const { guard, server, store } = setup(siteFor(V1));
+    await guard.serve('/');
+    const introduces = release('1.1.0', { 'index.html': 'a' }, undefined, '1.0.0', {
+      trustedKeys: { 'release-2': toBase64Url(next.publicKey) },
+    });
+    Object.assign(server.site, siteFor(introduces));
+    expect(await guard.refresh()).toEqual({ ok: true, version: '1.1.0' });
+
+    const signedByNew = release('1.2.0', { 'index.html': 'b' }, next.secretKey, '1.0.0', {
+      keyId: 'release-2',
+      trustedKeys: { 'release-2': toBase64Url(next.publicKey) },
+    });
+    Object.assign(server.site, siteFor(signedByNew));
+    expect(await guard.refresh()).toEqual({ ok: true, version: '1.2.0' });
+
+    expect(store.entries.has('sw:keys')).toBe(true);
+    const restarted = setup(siteFor(signedByNew), store);
+    expect(await restarted.guard.load()).toBe(true);
+    expect(restarted.guard.version).toBe('1.2.0');
+  });
+});
+
+describe('key rotation and revocation, refusals', () => {
+  const second = () => sodium.signingKeyPair(new Uint8Array(32).fill(8));
+
+  test('a key nobody introduced is refused', async () => {
+    const stranger = second();
+    const { guard, server } = setup(siteFor(V1));
+    await guard.serve('/');
+    const forged = release('1.5.0', { 'index.html': 'x' }, stranger.secretKey, '1.0.0', {
+      keyId: 'release-2',
+    });
+    Object.assign(server.site, siteFor(forged));
+    expect(await guard.refresh()).toEqual({ ok: false, reason: 'unknown_key' });
+  });
+});
+
+describe('revocation', () => {
+  const second = () => sodium.signingKeyPair(new Uint8Array(32).fill(8));
+
+  test('after a key is revoked, even a correctly signed manifest from it is refused', async () => {
+    const next = second();
+    const { guard, server } = setup(siteFor(V1));
+    await guard.serve('/');
+    const revokes = release('1.1.0', { 'index.html': 'a' }, undefined, '1.0.0', {
+      trustedKeys: { 'release-2': toBase64Url(next.publicKey) },
+      revokedKeys: ['release-1'],
+    });
+    Object.assign(server.site, siteFor(revokes));
+    // The revoking release is itself signed by the key it revokes; it is accepted once.
+    expect(await guard.refresh()).toEqual({ ok: true, version: '1.1.0' });
+    const replay = release('1.2.0', { 'index.html': 'b' }, undefined, '1.0.0', {
+      revokedKeys: ['release-1'],
+    });
+    Object.assign(server.site, siteFor(replay));
+    expect(await guard.refresh()).toEqual({ ok: false, reason: 'revoked_key' });
+  });
+
+  test('a release that drops an earlier revocation is refused', async () => {
+    const next = second();
+    const { guard, server } = setup(siteFor(V1));
+    await guard.serve('/');
+    const revokes = release('1.1.0', { 'index.html': 'a' }, undefined, '1.0.0', {
+      trustedKeys: { 'release-2': toBase64Url(next.publicKey) },
+      revokedKeys: ['release-9'],
+    });
+    Object.assign(server.site, siteFor(revokes));
+    await guard.refresh();
+    const forgets = release('1.2.0', { 'index.html': 'b' }, undefined, '1.0.0', {
+      revokedKeys: [],
+    });
+    Object.assign(server.site, siteFor(forgets));
+    expect(await guard.refresh()).toEqual({ ok: false, reason: 'revocation_removed' });
+  });
+
+  test('revocations pinned into the build apply from the first request', async () => {
+    const server = new FakeServer(siteFor(V1));
+    const guard = new Guard({
+      crypto,
+      trustedKeys: { 'release-1': pair.publicKey },
+      pinnedRevoked: ['release-1'],
+      network: server.fetch,
+      store: new MemoryStore(),
+      clientVersion: '1.0.0',
+    });
+    expect(await guard.serve('/')).toEqual({ ok: false, reason: 'no_manifest' });
+    expect(await guard.refresh()).toEqual({ ok: false, reason: 'revoked_key' });
   });
 });
