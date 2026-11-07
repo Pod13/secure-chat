@@ -5,7 +5,7 @@
 use axum::serve::Listener;
 use rustls::{ServerConfig, version::TLS13};
 use rustls_pki_types::{CertificateDer, PrivateKeyDer, pem::PemObject};
-use std::{io, net::SocketAddr, sync::Arc};
+use std::{io, net::SocketAddr, path::Path, sync::Arc};
 use tokio::net::{TcpListener, TcpStream};
 use tokio_rustls::{TlsAcceptor, server::TlsStream};
 
@@ -14,6 +14,8 @@ pub enum TlsError {
     BadCertificate,
     BadKey,
     Config,
+    /// A certificate or key file could not be read.
+    Unreadable,
 }
 
 /// Builds a server configuration that accepts TLS 1.3 and nothing else.
@@ -34,6 +36,13 @@ pub fn server_config(cert_chain_pem: &[u8], key_pem: &[u8]) -> Result<Arc<Server
         .map_err(|_| TlsError::BadKey)?;
     config.alpn_protocols = vec![b"http/1.1".to_vec()];
     Ok(Arc::new(config))
+}
+
+/// Reads the certificate chain and key from files, so a restart picks up replaced secrets.
+pub fn server_config_from_files(cert: &Path, key: &Path) -> Result<Arc<ServerConfig>, TlsError> {
+    let cert = std::fs::read(cert).map_err(|_| TlsError::Unreadable)?;
+    let key = std::fs::read(key).map_err(|_| TlsError::Unreadable)?;
+    server_config(&cert, &key)
 }
 
 /// A listener that completes a TLS handshake before handing the connection to the server.
