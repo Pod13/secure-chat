@@ -1,5 +1,14 @@
 <!--
 Sync Impact Report
+- Version change: 1.2.0 → 1.2.1
+- Modified principles: III (Security Requirements, algorithms): the approved symmetric cipher is
+  ChaCha20-Poly1305 (and XChaCha20-Poly1305); AES-256-GCM is no longer the default. Decision of the
+  project owner, recorded 2026-11-07. Narrows the allowed set; no requirement weakened.
+- Bump rationale: PATCH — clarification that matches the ciphersuite and libsodium usage already
+  planned; security lead review of this change still pending
+- Templates: plan, spec and tasks templates updated to match (see below)
+
+Previous report (1.1.0 → 1.2.0):
 - Version change: 1.1.0 → 1.2.0
 - Modified principles: VI (explicit exception for recovery with the Recovery Key, which must warn
   Contacts and existing devices and sign out earlier devices); none weakened or removed
@@ -8,13 +17,12 @@ Sync Impact Report
 - Bump rationale: MINOR — materially changes guidance in VI and the lawful-requests clause;
   I–III are untouched
 - Pending under Governance: security lead review of this amendment
-- Templates requiring updates (NOT modified by this command; follow-up needed):
-  ⚠ .specify/templates/plan-template.md — Constitution Check must list Principles I–XIII as gates
-  ⚠ .specify/templates/spec-template.md — security & privacy requirements section must be mandatory
-  ⚠ .specify/templates/tasks-template.md — every feature must include threat-model, security-test,
+- Templates requiring updates (done in 1.2.1):
+  ✔ .specify/templates/plan-template.md — Constitution Check must list Principles I–XIII as gates
+  ✔ .specify/templates/spec-template.md — security & privacy requirements section must be mandatory
+  ✔ .specify/templates/tasks-template.md — every feature must include threat-model, security-test,
     simplicity-review and review tasks
-- Follow-up TODOs: update the three templates above
-- History: 1.0.0 (2026-11-07) initial ratification; 1.1.0 (2026-11-07) added Principle XIII
+- History: 1.0.0 (2026-11-07) initial ratification; 1.1.0 (2026-11-07) added Principle XIII; 1.2.1 (2026-11-07) ChaCha20-Poly1305 as the approved AEAD
 -->
 
 # Secure Real-Time Chat Constitution
@@ -52,7 +60,7 @@ The server, its operators, its infrastructure provider, and anyone who gains acc
 
 - Only established, publicly specified, peer-reviewed protocols are permitted (e.g. Signal Protocol / X3DH-PQXDH + Double Ratchet for 1:1; MLS (RFC 9420) or Sender Keys for groups).
 - Only well-maintained, audited cryptographic libraries are permitted (e.g. libsignal, OpenMLS, libsodium, platform WebCrypto). Hand-written implementations of primitives, protocols, padding, or key derivation are forbidden.
-- Algorithms MUST be current and strong: AES-256-GCM or XChaCha20-Poly1305 for symmetric encryption; X25519 / Ed25519 for key agreement and signatures; HKDF for key derivation; Argon2id for passcode-derived keys. Broken or deprecated algorithms (MD5, SHA-1, RSA < 3072, ECB, CBC without MAC, etc.) are forbidden.
+- Algorithms MUST be current and strong: ChaCha20-Poly1305 (or its extended-nonce variant XChaCha20-Poly1305) for symmetric encryption, which is also the AEAD of the MLS ciphersuite in use; X25519 / Ed25519 for key agreement and signatures; HKDF for key derivation; Argon2id for passcode-derived keys. Broken or deprecated algorithms (MD5, SHA-1, RSA < 3072, ECB, CBC without MAC, etc.) are forbidden.
 - The design MUST be **crypto-agile**: algorithms and protocol versions are versioned so they can be replaced without breaking the system.
 - A **post-quantum** hybrid key agreement (e.g. ML-KEM combined with X25519) MUST be on the roadmap and adopted once supported by the chosen audited libraries.
 - Any change to cryptographic code or configuration requires review by a designated cryptography reviewer.
@@ -253,4 +261,4 @@ Any violation MUST be recorded in the plan's Complexity Tracking table with just
 - Compliance MUST be reviewed at every plan, every pull request touching security-sensitive areas, every release, and in a full constitution audit at least every six months.
 - Any team member may raise a constitution violation; violations block merge and release until resolved.
 
-**Version**: 1.2.0 | **Ratified**: 2026-11-07 | **Last Amended**: 2026-11-07
+**Version**: 1.2.1 | **Ratified**: 2026-11-07 | **Last Amended**: 2026-11-07
