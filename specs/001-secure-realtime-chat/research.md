@@ -61,6 +61,7 @@ Each entry: Decision, Rationale, Alternatives considered. Items marked **verify*
 | sha2 | server | hashes session tokens and chains log lines; RustCrypto (III) |
 | getrandom | server | operating-system randomness behind the `Random` port |
 | rustls 0.23 (ring), tokio-rustls, rustls-pki-types | server | TLS 1.3 only, in the server itself; rustls was already in the tree through sqlx (III) |
+| axum `ws` (tokio-tungstenite 0.29), base64 0.22 | server | WebSocket channel; base64 was already in the tree through sqlx |
 | rcgen | server tests only | makes throwaway certificates for TLS tests |
 | Playwright, Vitest, proptest, cargo-fuzz | dev only | tests required by X |
 

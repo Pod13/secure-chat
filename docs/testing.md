@@ -35,3 +35,12 @@ $PGBIN/pg_ctl -D /tmp/sc-pgdata stop      # when finished
 
 CI uses a `postgres:16` service container (see `.github/workflows/ci.yml`).
 
+## Mutation testing one module (server)
+
+```sh
+export DATABASE_URL=postgres://postgres@localhost:55432/postgres
+cargo mutants -p server -f server/src/auth/mod.rs --no-shuffle -- --test auth
+```
+
+Pass the test files that cover the module after `--`. A `MISSED` mutant means the tests do not notice that behaviour changing: add a test, do not exclude the code. A `TIMEOUT` (for example a loop that never ends) counts as caught.
+

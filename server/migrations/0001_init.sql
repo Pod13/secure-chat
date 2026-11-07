@@ -40,6 +40,8 @@ CREATE TABLE delivery_tokens (
 CREATE INDEX delivery_tokens_device_idx ON delivery_tokens (device_id);
 
 CREATE TABLE envelopes (
+    -- Arrival order. Never sent to clients; it keeps delivery in order within one second.
+    seq                 bigint GENERATED ALWAYS AS IDENTITY UNIQUE,
     envelope_id         bytea PRIMARY KEY CHECK (octet_length(envelope_id) = 16),
     recipient_device_id bytea       NOT NULL REFERENCES devices ON DELETE CASCADE,
     ciphertext          bytea       NOT NULL CHECK (octet_length(ciphertext) <= 131072),
@@ -47,7 +49,7 @@ CREATE TABLE envelopes (
     expires_at          timestamptz NOT NULL,
     CHECK (expires_at <= enqueued_at + interval '30 days')
 );
-CREATE INDEX envelopes_recipient_idx ON envelopes (recipient_device_id, enqueued_at);
+CREATE INDEX envelopes_recipient_idx ON envelopes (recipient_device_id, seq);
 CREATE INDEX envelopes_expiry_idx ON envelopes (expires_at);
 
 -- The owner is the creator (needed to revoke). Who redeems an Invite is never recorded.

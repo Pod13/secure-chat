@@ -156,3 +156,95 @@ impl LimitStore for MemoryLimitStore {
         Ok((had - counters.len()) as u64)
     }
 }
+
+use server::api::ws::{Cursor, Envelope, EnvelopeId, Outbox, OutboxError};
+
+/// In-memory delivery queue. `add` + `notify` mimic a message arriving while connected.
+#[derive(Default)]
+pub struct MemoryOutbox {
+    pub items: Mutex<Vec<(DeviceId, Envelope)>>,
+    pub notify: tokio::sync::Notify,
+    pub broken: Mutex<bool>,
+}
+
+impl MemoryOutbox {
+    pub fn add(&self, device: DeviceId, id: u8, enqueued_at: u64) {
+        let seq = self.items.lock().unwrap().len() as u64 + 1;
+        let envelope = Envelope {
+            id: [id; 16],
+            ciphertext: vec![id; 4],
+            enqueued_at,
+            seq,
+        };
+        self.items.lock().unwrap().push((device, envelope));
+    }
+
+    pub fn ids_for(&self, device: DeviceId) -> Vec<u8> {
+        let items = self.items.lock().unwrap();
+        items
+            .iter()
+            .filter(|(d, _)| *d == device)
+            .map(|(_, e)| e.id[0])
+            .collect()
+    }
+}
+
+impl Outbox for MemoryOutbox {
+    async fn pending(
+        &self,
+        device: &DeviceId,
+        after: &Cursor,
+        limit: usize,
+    ) -> Result<Vec<Envelope>, OutboxError> {
+        if *self.broken.lock().unwrap() {
+            return Err(OutboxError);
+        }
+        let mut found: Vec<Envelope> = self
+            .items
+            .lock()
+            .unwrap()
+            .iter()
+            .filter(|(d, e)| d == device && e.seq > after.seq)
+            .map(|(_, e)| Envelope {
+                id: e.id,
+                ciphertext: e.ciphertext.clone(),
+                enqueued_at: e.enqueued_at,
+                seq: e.seq,
+            })
+            .collect();
+        found.sort_by_key(|e| e.seq);
+        found.truncate(limit);
+        Ok(found)
+    }
+
+    async fn ack(&self, device: &DeviceId, ids: &[EnvelopeId]) -> Result<(), OutboxError> {
+        self.items
+            .lock()
+            .unwrap()
+            .retain(|(d, e)| !(d == device && ids.contains(&e.id)));
+        Ok(())
+    }
+
+    async fn changed(&self, _device: &DeviceId) {
+        self.notify.notified().await;
+    }
+}
+
+/// A clock that can be shared between tasks and moved by hand.
+pub struct SharedClock(pub std::sync::atomic::AtomicU64);
+
+impl SharedClock {
+    pub fn at(secs: u64) -> Self {
+        Self(std::sync::atomic::AtomicU64::new(secs))
+    }
+
+    pub fn set(&self, secs: u64) {
+        self.0.store(secs, std::sync::atomic::Ordering::SeqCst);
+    }
+}
+
+impl Clock for SharedClock {
+    fn now_secs(&self) -> u64 {
+        self.0.load(std::sync::atomic::Ordering::SeqCst)
+    }
+}

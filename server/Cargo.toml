@@ -8,7 +8,7 @@ publish.workspace = true
 workspace = true
 
 [dependencies]
-axum = { version = "=0.8.9", default-features = false, features = ["http1", "tokio"] }
+axum = { version = "=0.8.9", default-features = false, features = ["http1", "tokio", "ws"] }
 tokio = { version = "=1.54.1", features = ["macros", "net", "rt-multi-thread", "signal"] }
 sqlx = { version = "=0.9.0", default-features = false, features = ["migrate", "postgres", "runtime-tokio", "tls-rustls"] }
 jsonschema = { version = "=0.60.1", default-features = false }
@@ -20,5 +20,9 @@ rustls = { version = "=0.23.46", default-features = false, features = ["ring", "
 tokio-rustls = { version = "=0.26.6", default-features = false, features = ["ring"] }
 rustls-pki-types = "=1.15.1"
 
+base64 = { version = "=0.22.1", default-features = false, features = ["std"] }
+
 [dev-dependencies]
+tokio-tungstenite = { version = "=0.29.0", default-features = false, features = ["connect", "handshake"] }
+futures-util = { version = "0.3", default-features = false, features = ["sink", "std"] }
 rcgen = { version = "=0.14.10", default-features = false, features = ["pem", "ring"] }

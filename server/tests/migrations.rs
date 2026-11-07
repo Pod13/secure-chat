@@ -141,7 +141,7 @@ async fn the_database_enforces_sizes_and_limits_itself() {
     );
     insert_account(&mut conn, 1).await;
     insert_device(&mut conn, 1, 1).await;
-    let long_lived = "INSERT INTO envelopes VALUES (decode(repeat('01',16),'hex'), decode(repeat('01',16),'hex'), \
+    let long_lived = "INSERT INTO envelopes (envelope_id, recipient_device_id, ciphertext, enqueued_at, expires_at) VALUES (decode(repeat('01',16),'hex'), decode(repeat('01',16),'hex'), \
         '\\x01', now(), now() + interval '31 days')";
     assert!(
         fails(&mut conn, long_lived).await,
@@ -189,7 +189,7 @@ async fn deleting_an_account_removes_everything_tied_to_it() {
     insert_device(&mut conn, 1, 1).await;
     let rows = [
         "INSERT INTO delivery_tokens VALUES (decode(repeat('05',32),'hex'), decode(repeat('01',16),'hex'), false)",
-        "INSERT INTO envelopes VALUES (decode(repeat('06',16),'hex'), decode(repeat('01',16),'hex'), '\\x01', now(), now())",
+        "INSERT INTO envelopes (envelope_id, recipient_device_id, ciphertext, enqueued_at, expires_at) VALUES (decode(repeat('06',16),'hex'), decode(repeat('01',16),'hex'), '\\x01', now(), now())",
         "INSERT INTO sessions VALUES (decode(repeat('07',32),'hex'), decode(repeat('01',16),'hex'), now())",
         "INSERT INTO invites VALUES (decode(repeat('08',32),'hex'), 'contact', decode(repeat('01',16),'hex'), now(), 1, 0, false)",
         "INSERT INTO backups VALUES (decode(repeat('01',16),'hex'), decode(repeat('0a',16),'hex'), decode(repeat('0b',32),'hex'), 10)",

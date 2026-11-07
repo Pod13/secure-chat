@@ -35,3 +35,17 @@ pub async fn fresh_pool() -> PgPool {
     Migrator::new(dir).await.unwrap().run(&pool).await.unwrap();
     pool
 }
+
+/// Inserts an account and one device (ids are `n` repeated), so queue rows have an owner.
+pub async fn insert_device(pool: &PgPool, n: u8) {
+    let hex = format!("{n:02x}");
+    let sql = format!(
+        "INSERT INTO accounts VALUES (decode(repeat('{hex}',16),'hex'), decode(repeat('{hex}',32),'hex'), CURRENT_DATE, CURRENT_DATE); \
+         INSERT INTO devices (device_id, account_id, device_public_key, linked_on, label_blob) VALUES \
+         (decode(repeat('{hex}',16),'hex'), decode(repeat('{hex}',16),'hex'), decode(repeat('{hex}',32),'hex'), CURRENT_DATE, '\\x01')"
+    );
+    sqlx::raw_sql(sqlx::AssertSqlSafe(sql))
+        .execute(pool)
+        .await
+        .unwrap();
+}

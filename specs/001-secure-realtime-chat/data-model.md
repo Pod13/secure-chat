@@ -37,6 +37,7 @@ A delivery token also authorises fetching key packages of its Device (`POST /key
 ### Queued envelope
 | Field | Type | Notes |
 |-------|------|-------|
+| seq | integer | Arrival order within the queue. Internal; never sent to a client. Keeps delivery in order within one second |
 | envelope_id | random | |
 | recipient_device_id | ref | |
 | ciphertext | bytes | Padded MLS message, bucketed size |
