@@ -72,7 +72,7 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 - [X] T026 Implement the WebSocket channel and frames from `contracts/realtime-frames.md` in `server/src/api/ws.rs`
 - [X] T027 Implement the envelope queue with delete-on-ack and 30-day expiry job in `server/src/delivery/queue.rs`
 - [X] T028 Write tests then implement scheduled retention purges for every Data Inventory row: abuse data (7 days), expired Invites (+30 days), key packages (30 days), audit log (1 year) in `server/src/retention/mod.rs` (tests in `server/tests/retention.rs` first)
-- [ ] T029 [P] Configure encryption at rest for PostgreSQL and object storage with KMS-managed keys, plus backup retention matching live data, in `server/deploy/storage.md`
+- [X] T029 [P] Configure encryption at rest for PostgreSQL and object storage with KMS-managed keys, plus backup retention matching live data, in `server/deploy/storage.md`
 
 ### Crypto and client foundation
 
