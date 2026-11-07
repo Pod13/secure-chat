@@ -1,0 +1,30 @@
+[package]
+name = "crypto-wasm-fuzz"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+# Not part of the main workspace: fuzzing needs nightly Rust and cargo-fuzz.
+[workspace]
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "=0.4.13"
+crypto-wasm = { path = ".." }
+
+[[bin]]
+name = "padding"
+path = "fuzz_targets/padding.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "mls_messages"
+path = "fuzz_targets/mls_messages.rs"
+test = false
+doc = false
+bench = false
+
