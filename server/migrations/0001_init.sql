@@ -53,10 +53,12 @@ CREATE INDEX envelopes_recipient_idx ON envelopes (recipient_device_id, seq);
 CREATE INDEX envelopes_expiry_idx ON envelopes (expires_at);
 
 -- The owner is the creator (needed to revoke). Who redeems an Invite is never recorded.
+-- Operator seed Invites have no owner; only service Invites may be ownerless.
 CREATE TABLE invites (
     token_hash       bytea PRIMARY KEY CHECK (octet_length(token_hash) = 32),
     kind             text        NOT NULL CHECK (kind IN ('service', 'contact', 'group')),
-    owner_account_id bytea       NOT NULL REFERENCES accounts ON DELETE CASCADE,
+    owner_account_id bytea       REFERENCES accounts ON DELETE CASCADE,
+    CHECK (owner_account_id IS NOT NULL OR kind = 'service'),
     expires_at       timestamptz NOT NULL,
     max_uses         integer     NOT NULL CHECK (max_uses BETWEEN 1 AND 1000),
     uses             integer     NOT NULL DEFAULT 0 CHECK (uses >= 0 AND uses <= max_uses),

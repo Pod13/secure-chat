@@ -2,7 +2,8 @@
 //! mode. The configuration offers exactly one protocol version, so an older client cannot even
 //! negotiate; tests prove it with real handshakes.
 
-use axum::serve::Listener;
+use axum::extract::connect_info::Connected;
+use axum::serve::{IncomingStream, Listener};
 use rustls::{ServerConfig, version::TLS13};
 use rustls_pki_types::{CertificateDer, PrivateKeyDer, pem::PemObject};
 use std::{io, net::SocketAddr, path::Path, sync::Arc};
@@ -78,5 +79,21 @@ impl Listener for TlsListener {
 
     fn local_addr(&self) -> io::Result<Self::Addr> {
         self.tcp.local_addr()
+    }
+}
+
+/// The address of the other end of a connection, used only to pick a truncated rate-limit bucket.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Peer(pub SocketAddr);
+
+impl Connected<IncomingStream<'_, TlsListener>> for Peer {
+    fn connect_info(stream: IncomingStream<'_, TlsListener>) -> Self {
+        Self(*stream.remote_addr())
+    }
+}
+
+impl Connected<IncomingStream<'_, TcpListener>> for Peer {
+    fn connect_info(stream: IncomingStream<'_, TcpListener>) -> Self {
+        Self(*stream.remote_addr())
     }
 }

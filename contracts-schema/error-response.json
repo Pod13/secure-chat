@@ -12,7 +12,8 @@
         "not_found",
         "rate_limited",
         "too_large",
-        "conflict"
+        "conflict",
+        "internal"
       ]
     },
     "retry_after": {

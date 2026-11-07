@@ -10,14 +10,22 @@
       "pattern": "^[A-Za-z0-9_-]+$",
       "minLength": 43,
       "maxLength": 43
+    },
+    "token_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 22,
+      "maxLength": 22
     }
   },
   "required": [
-    "token"
+    "token",
+    "token_id"
   ],
   "examples": [
     {
-      "token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      "token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "token_id": "AAAAAAAAAAAAAAAAAAAAAA"
     }
   ]
 }

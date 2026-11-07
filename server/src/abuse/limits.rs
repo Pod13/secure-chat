@@ -23,6 +23,8 @@ pub enum Kind {
     InviteCreate,
     DeliverToken,
     DeliverRecipient,
+    KeyPackageFetch,
+    InviteRedeem,
     BlobUpload,
     Recovery,
 }
@@ -35,6 +37,8 @@ impl Kind {
             Self::InviteCreate => (30, 3600),
             Self::DeliverToken => (60, 60),
             Self::DeliverRecipient => (600, 60),
+            Self::KeyPackageFetch => (20, 3600),
+            Self::InviteRedeem => (30, 3600),
             Self::BlobUpload => (20, 3600),
             Self::Recovery => (5, 3600),
         };
@@ -51,6 +55,8 @@ impl Kind {
             Self::InviteCreate => "invite",
             Self::DeliverToken => "dtoken",
             Self::DeliverRecipient => "drecip",
+            Self::KeyPackageFetch => "kpfetch",
+            Self::InviteRedeem => "redeem",
             Self::BlobUpload => "blob",
             Self::Recovery => "recover",
         }

@@ -4,6 +4,7 @@
 
 #![allow(dead_code)]
 
+pub mod app;
 pub mod db;
 
 pub struct Artifact {

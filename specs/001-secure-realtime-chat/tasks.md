@@ -107,21 +107,21 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 
 ### Tests for User Story 1 (write first, confirm they fail)
 
-- [ ] T045 [P] [US1] Contract tests for `POST /accounts`, `/auth/*`, `/invites`, `/delivery-tokens`, `/deliver` in `server/tests/contract_accounts.rs`
-- [ ] T046 [P] [US1] Security test: a server-side dump after a full chat contains no plaintext, username or Contact list in `server/tests/adversary_chat.rs`
-- [ ] T047 [P] [US1] Security test: a delivery with a revoked or unknown token is rejected and sender identity is never logged in `server/tests/sealed_sender.rs`
+- [X] T045 [P] [US1] Contract tests for `POST /accounts`, `/auth/*`, `/invites`, `/delivery-tokens`, `/deliver` in `server/tests/contract_accounts.rs`
+- [X] T046 [P] [US1] Security test: a server-side dump after a full chat contains no plaintext, username or Contact list in `server/tests/adversary_chat.rs`
+- [X] T047 [P] [US1] Security test: a delivery with a revoked or unknown token is rejected and sender identity is never logged in `server/tests/sealed_sender.rs`
 - [ ] T048 [P] [US1] End-to-end test of Scenario 1 (online, offline, ordering, no duplicates) in `web/tests/e2e/chat.spec.ts`
-- [ ] T049 [P] [US1] Security test: account creation leaves no stored or logged link between the Invite and the new Account in `server/tests/no_invite_link.rs`
-- [ ] T050 [P] [US1] Security test: key-package fetch and Invite redemption need no account authentication and log no requester in `server/tests/keypackage_fetch.rs`
-- [ ] T051 [P] [US1] Unit tests for replies, reactions and edits (only the author can edit; unknown targets are ignored) in `web/tests/messagetypes.test.ts`
+- [X] T049 [P] [US1] Security test: account creation leaves no stored or logged link between the Invite and the new Account in `server/tests/no_invite_link.rs`
+- [X] T050 [P] [US1] Security test: key-package fetch and Invite redemption need no account authentication and log no requester in `server/tests/keypackage_fetch.rs`
+- [X] T051 [P] [US1] Unit tests for replies, reactions and edits (only the author can edit; unknown targets are ignored) in `web/tests/messagetypes.test.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T052 [P] [US1] Implement Account and Device records and the Invite model in `server/src/accounts/mod.rs`
-- [ ] T053 [US1] Implement `POST /accounts` with invite-only registration, operator seed Invites, storing the identity public key and no link between the Invite and the new Account in `server/src/accounts/signup.rs`
-- [ ] T054 [US1] Implement Invite creation, revocation, expiry and use limits in `server/src/accounts/invites.rs`
-- [ ] T055 [US1] Implement delivery tokens and sealed-sender `POST /deliver` with per-token and per-recipient rate limits in `server/src/delivery/sealed.rs`
-- [ ] T056 [US1] Implement key-package storage and `POST /key-packages/fetch` and `POST /invites/redeem` (Contact and Group Invites), a last-resort key package per Device, and per-token fetch rate limits in `server/src/accounts/keypackages.rs`
+- [X] T052 [P] [US1] Implement Account and Device records and the Invite model in `server/src/accounts/mod.rs`
+- [X] T053 [US1] Implement `POST /accounts` with invite-only registration, operator seed Invites, storing the identity public key and no link between the Invite and the new Account in `server/src/accounts/signup.rs`
+- [X] T054 [US1] Implement Invite creation, revocation, expiry and use limits in `server/src/accounts/invites.rs`
+- [X] T055 [US1] Implement delivery tokens and sealed-sender `POST /deliver` with per-token and per-recipient rate limits in `server/src/delivery/sealed.rs`
+- [X] T056 [US1] Implement key-package storage and `POST /key-packages/fetch` and `POST /invites/redeem` (Contact and Group Invites), a last-resort key package per Device, and per-token fetch rate limits in `server/src/accounts/keypackages.rs`
 - [ ] T057 [P] [US1] Build the sign-up flow (username, passcode, Recovery Key explanation) in `web/src/app/screens/SignUp.tsx`
 - [ ] T058 [US1] Generate keys on the Device and create the Account in `web/src/crypto/account.ts`
 - [ ] T059 [US1] Generate the Recovery Key at sign-up, show it once, and derive the Account identity key (its private half only signs Device certificates at sign-up and recovery and is never stored), Backup key and Backup access token with HKDF using distinct labels in `web/src/crypto/recoverykeys.ts`

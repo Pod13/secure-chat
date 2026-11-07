@@ -24,6 +24,8 @@ use serde_json::{Value, json};
 use std::{future::Future, sync::Arc, time::Duration, time::Instant};
 
 pub const PROTOCOL: &str = "chat.v1";
+/// A connection with no frames for this long is closed; clients ping about every 30 seconds.
+pub const DEFAULT_IDLE_TIMEOUT: Duration = Duration::from_secs(90);
 /// Client frames are tiny (an ack of 100 ids is about 2.5 KB).
 pub const MAX_FRAME_BYTES: usize = 8 * 1024;
 const PAGE: usize = 50;

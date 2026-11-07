@@ -16,7 +16,7 @@ Anything not listed here MUST NOT be stored (Constitution IV). This file is the 
 | Queued ciphertext envelope | Deliver to offline Devices | No (ciphertext) | Deleted on delivery; max 30 days |
 | Encrypted attachment blob | Deliver attachments | No (ciphertext) | Until all fetched; max 30 days |
 | Encrypted Backup blob and hash of its access token | Restore history after recovery | No (ciphertext) | Until replaced or account deletion |
-| Invite token hash, owner Account, expiry, use count, revoked flag | Enforce and revoke Invites. The owner is the creator; the redeemer is never stored | Hash only | Until expiry plus 30 days |
+| Invite token hash, owner Account (none for operator seed Invites), expiry, use count, revoked flag | Enforce and revoke Invites. The owner is the creator; the redeemer is never stored | Hash only | Until expiry plus 30 days |
 | Device login nonce | Challenge-response login | No (random) | 5 minutes |
 | Session token hash | Authenticate requests from a Device | Hash only | 15 minutes |
 | Pending link request (public keys) | Let a new Device ask an existing one for approval | Yes (public) | 10 minutes |

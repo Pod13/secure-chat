@@ -5,6 +5,8 @@
 //! it to the Device. Every failure looks the same to the caller so nothing can be probed.
 //! All I/O (clock, randomness, storage) is injected so every branch can be tested.
 
+pub mod pg;
+
 use crate::ports::{Clock, Random};
 use ed25519_dalek::{Signature, VerifyingKey};
 use sha2::{Digest, Sha256};
@@ -17,7 +19,7 @@ pub type Hash = [u8; 32];
 pub const NONCE_TTL_SECS: u64 = 300;
 
 /// Domain separation: a signature made for login can never be valid for anything else.
-const LOGIN_DOMAIN: &[u8] = b"secure-chat/login/v1";
+pub const LOGIN_DOMAIN: &[u8] = b"secure-chat/login/v1";
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct StoreError;
@@ -74,7 +76,7 @@ pub trait AuthStore {
     ) -> impl Future<Output = Result<(), StoreError>> + Send;
 }
 
-fn login_message(device: &DeviceId, nonce: &Hash) -> Vec<u8> {
+pub fn login_message(device: &DeviceId, nonce: &Hash) -> Vec<u8> {
     [LOGIN_DOMAIN, device, nonce].concat()
 }
 
