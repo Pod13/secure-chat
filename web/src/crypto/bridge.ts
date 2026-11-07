@@ -37,7 +37,9 @@ interface Freeable {
 
 /** The shape wasm-bindgen generates for `crypto-wasm/src/wasm.rs`. */
 export interface WasmClientLike extends Freeable {
+  export_state(): Uint8Array;
   key_package(): Uint8Array;
+  last_resort_key_package(): Uint8Array;
   create_group(): Uint8Array;
   add_member(
     group: Uint8Array,
@@ -57,7 +59,9 @@ export interface WasmClientLike extends Freeable {
 
 export interface MlsModule {
   ciphersuite_id(): number;
-  WasmClient: new (identity: Uint8Array) => WasmClientLike;
+  WasmClient: (new (identity: Uint8Array) => WasmClientLike) & {
+    restore(state: Uint8Array): WasmClientLike;
+  };
 }
 
 export type Received =
@@ -87,6 +91,16 @@ export class Device {
 
   keyPackage(): Uint8Array {
     return call(() => this.client.key_package());
+  }
+
+  /** A reusable key package, handed out only when single-use ones run out. */
+  lastResortKeyPackage(): Uint8Array {
+    return call(() => this.client.last_resort_key_package());
+  }
+
+  /** The Device's secret state; seal it (the vault does) before it is stored. */
+  exportState(): Uint8Array {
+    return call(() => this.client.export_state());
   }
 
   createGroup(): Uint8Array {
@@ -161,11 +175,16 @@ function toReceived(kind: number, message: Uint8Array): Received {
 
 export interface MlsBridge {
   newDevice(identity: Uint8Array): Device;
+  /** Continues as a Device saved with `exportState`. */
+  restoreDevice(state: Uint8Array): Device;
 }
 
 /** Refuses to run against a module built for a different ciphersuite. */
 export function createBridge(module: MlsModule): MlsBridge {
   if (module.ciphersuite_id() !== EXPECTED_CIPHERSUITE)
     throw new BridgeError('incompatible_module');
-  return { newDevice: (identity) => call(() => new Device(new module.WasmClient(identity))) };
+  return {
+    newDevice: (identity) => call(() => new Device(new module.WasmClient(identity))),
+    restoreDevice: (state) => call(() => new Device(module.WasmClient.restore(state))),
+  };
 }

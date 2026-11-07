@@ -24,6 +24,9 @@ function fakeModule(spy: Spy, suite = EXPECTED_CIPHERSUITE): MlsModule {
   class Fake implements WasmClientLike {
     constructor(readonly identity: Uint8Array) {}
     key_package = () => guard(bytes(1));
+    last_resort_key_package = () => guard(bytes(8));
+    export_state = () => guard(bytes(9, ...this.identity));
+    static restore = (state: Uint8Array) => guard(new Fake(state.slice(1)));
     create_group = () => guard(bytes(2));
     add_member = (_g: Uint8Array, kp: Uint8Array) =>
       guard({
@@ -66,7 +69,30 @@ describe('createBridge', () => {
   });
 });
 
-describe('Device', () => {
+describe('Device state', () => {
+  const device = () => createBridge(fakeModule({ freed: [] })).newDevice(bytes(9));
+
+  test('saves and restores a device, and offers a last-resort key package', () => {
+    const d = device();
+    expect([...d.lastResortKeyPackage()]).toEqual([8]);
+    expect([...d.exportState()]).toEqual([9, 9]);
+    const bridge = createBridge(fakeModule({ freed: [] }));
+    expect([...bridge.restoreDevice(d.exportState()).exportState()]).toEqual([9, 9]);
+  });
+
+  test('turns a restore failure into a bridge error with a code', () => {
+    const spy: Spy = { freed: [], failWith: 'malformed' };
+    const bridge = createBridge(fakeModule(spy));
+    try {
+      bridge.restoreDevice(bytes(1));
+      expect.unreachable();
+    } catch (error) {
+      expect((error as BridgeError).code).toBe('malformed');
+    }
+  });
+});
+
+describe('Device calls', () => {
   const device = () => createBridge(fakeModule({ freed: [] })).newDevice(bytes(9));
 
   test('passes bytes through for the plain operations', () => {

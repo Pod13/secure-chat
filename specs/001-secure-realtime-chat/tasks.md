@@ -123,8 +123,10 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 - [X] T055 [US1] Implement delivery tokens and sealed-sender `POST /deliver` with per-token and per-recipient rate limits in `server/src/delivery/sealed.rs`
 - [X] T056 [US1] Implement key-package storage and `POST /key-packages/fetch` and `POST /invites/redeem` (Contact and Group Invites), a last-resort key package per Device, and per-token fetch rate limits in `server/src/accounts/keypackages.rs`
 - [ ] T057 [P] [US1] Build the sign-up flow (username, passcode, Recovery Key explanation) in `web/src/app/screens/SignUp.tsx`
-- [ ] T058 [US1] Generate keys on the Device and create the Account in `web/src/crypto/account.ts`
-- [ ] T059 [US1] Generate the Recovery Key at sign-up, show it once, and derive the Account identity key (its private half only signs Device certificates at sign-up and recovery and is never stored), Backup key and Backup access token with HKDF using distinct labels in `web/src/crypto/recoverykeys.ts`
+- [X] T058 [US1] Generate keys on the Device and create the Account in `web/src/crypto/account.ts`
+- [X] T059 [US1] Generate the Recovery Key at sign-up, show it once, and derive the Account identity key (its private half only signs Device certificates at sign-up and recovery and is never stored), Backup key and Backup access token with HKDF using distinct labels in `web/src/crypto/recoverykeys.ts`
+- [X] T157 [US1] Save and restore a Device's MLS state (keys, credential, groups) so a reload does not lose Conversations, in `crypto-wasm/src/state.rs`, `crypto-wasm/src/wasm.rs` and `web/src/crypto/bridge.ts` (prerequisite of T058; found missing while implementing it)
+- [X] T158 [US1] Produce the last-resort key package the server hands out when single-use ones run out (FR-006, T056) in `crypto-wasm/src/lib.rs`
 - [ ] T060 [US1] Build Invite creation, sharing and QR code in `web/src/app/screens/Invite.tsx`
 - [ ] T061 [US1] Implement joining by Invite and starting a 1:1 Conversation in `web/src/app/screens/JoinInvite.tsx` and `web/src/crypto/conversation.ts`
 - [ ] T062 [US1] Build the conversation view with text sending, receive, and status (sending, sent, delivered) in `web/src/app/screens/Conversation.tsx`

@@ -58,8 +58,21 @@ impl WasmClient {
             .map(|c| Self(RefCell::new(c)))
             .map_err(code)
     }
+    /// Rebuilds a Device from bytes made by `export_state`.
+    pub fn restore(state: &[u8]) -> Result<WasmClient, String> {
+        Client::restore(state)
+            .map(|c| Self(RefCell::new(c)))
+            .map_err(code)
+    }
+    /// The Device's secret state. The caller must seal it before storing it.
+    pub fn export_state(&self) -> Result<Vec<u8>, String> {
+        self.0.borrow().export_state().map_err(code)
+    }
     pub fn key_package(&self) -> Result<Vec<u8>, String> {
         self.0.borrow().key_package().map_err(code)
+    }
+    pub fn last_resort_key_package(&self) -> Result<Vec<u8>, String> {
+        self.0.borrow().last_resort_key_package().map_err(code)
     }
     pub fn create_group(&self) -> Result<Vec<u8>, String> {
         self.0.borrow_mut().create_group().map_err(code)

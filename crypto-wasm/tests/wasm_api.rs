@@ -74,3 +74,16 @@ fn every_error_has_its_own_code() {
     assert_eq!(unique.len(), 5);
     assert_eq!(Error::TooLarge.code(), "too_large");
 }
+
+#[test]
+fn state_and_last_resort_packages_cross_the_api_as_bytes() {
+    let (alice, bob, group) = pair();
+    let restored = WasmClient::restore(&alice.export_state().unwrap()).unwrap();
+    let sent = restored.encrypt(&group, b"still here").unwrap();
+    assert_eq!(bob.receive(&group, &sent).unwrap().message(), b"still here");
+    assert_ne!(
+        alice.last_resort_key_package().unwrap(),
+        alice.key_package().unwrap()
+    );
+    assert_eq!(WasmClient::restore(b"junk").err().unwrap(), "malformed");
+}

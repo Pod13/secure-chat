@@ -5,18 +5,20 @@
 //! welcome is checked against the shipped suite before anything else happens to it.
 
 pub mod padding;
+mod state;
 pub mod wasm;
 
 use openmls::group::PURE_CIPHERTEXT_WIRE_FORMAT_POLICY;
 use openmls::group::{MlsGroup, MlsGroupCreateConfig, MlsGroupJoinConfig, StagedWelcome};
 use openmls::prelude::tls_codec::{Deserialize as _, Serialize as _};
 use openmls::prelude::{
-    BasicCredential, Ciphersuite, CredentialWithKey, KeyPackage, KeyPackageIn, LeafNodeIndex,
-    MlsMessageBodyIn, MlsMessageIn, MlsMessageOut, ProcessedMessageContent, ProtocolMessage,
-    ProtocolVersion,
+    BasicCredential, Capabilities, Ciphersuite, CredentialWithKey, ExtensionType, KeyPackage,
+    KeyPackageIn, LeafNodeIndex, MlsMessageBodyIn, MlsMessageIn, MlsMessageOut,
+    ProcessedMessageContent, ProtocolMessage, ProtocolVersion,
 };
 use openmls_basic_credential::SignatureKeyPair;
 use openmls_rust_crypto::OpenMlsRustCrypto;
+use openmls_traits::OpenMlsProvider as _;
 use std::collections::HashMap;
 use wasm_bindgen::prelude::wasm_bindgen;
 
@@ -131,8 +133,12 @@ impl Client {
             credential: BasicCredential::new(identity.to_vec()).into(),
             signature_key: signer.to_public_vec().into(),
         };
+        let provider = OpenMlsRustCrypto::default();
+        signer
+            .store(provider.storage())
+            .map_err(|_| Error::Rejected)?;
         Ok(Self {
-            provider: OpenMlsRustCrypto::default(),
+            provider,
             signer,
             credential,
             groups: HashMap::new(),
@@ -141,7 +147,25 @@ impl Client {
 
     /// A fresh single-use key package, to be published so others can add this Device.
     pub fn key_package(&self) -> Result<Vec<u8>, Error> {
-        let bundle = KeyPackage::builder()
+        self.build_key_package(false)
+    }
+
+    /// A key package marked reusable, handed out only when the single-use ones have run out.
+    pub fn last_resort_key_package(&self) -> Result<Vec<u8>, Error> {
+        self.build_key_package(true)
+    }
+
+    fn build_key_package(&self, last_resort: bool) -> Result<Vec<u8>, Error> {
+        let mut builder = KeyPackage::builder();
+        if last_resort {
+            let capabilities = Capabilities::builder()
+                .extensions(vec![ExtensionType::LastResort])
+                .build();
+            builder = builder
+                .mark_as_last_resort()
+                .leaf_node_capabilities(capabilities);
+        }
+        let bundle = builder
             .build(
                 CIPHERSUITE,
                 &self.provider,

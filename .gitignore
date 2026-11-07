@@ -14,8 +14,8 @@ signing-keys/
 # Rust (server/, crypto-wasm/)
 target/
 **/*.rs.bk
-fuzz/artifacts/
-fuzz/corpus/
+**/fuzz/artifacts/
+**/fuzz/corpus/
 mutants.out*/
 
 # WebAssembly build output
