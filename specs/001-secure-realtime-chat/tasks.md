@@ -90,7 +90,7 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 - [X] T038 Write tests then implement the reproducible build, content-hashed assets and signed manifest in `build/build.sh` and `build/sign-manifest.ts`
 - [X] T039 Write tests then implement the service worker that refuses assets not in the manifest in `web/src/sw/sw.ts` (test in `web/tests/sw.test.ts` first)
 - [X] T040 [P] Enforce CSP without `unsafe-inline` or `unsafe-eval`, SRI and Trusted Types in `web/index.html` and `web/src/app/trustedTypes.ts`
-- [ ] T041 [P] Add provenance attestation and release signing steps in `.github/workflows/release.yml` (signing keys in an HSM, never on developer machines)
+- [X] T041 [P] Add provenance attestation and release signing steps in `.github/workflows/release.yml` (signing keys in an HSM, never on developer machines)
 - [ ] T042 Write tests then implement forced update: the signed manifest carries a minimum client version, and the service worker blocks the app and prompts an update when the installed version is lower, in `web/src/sw/update.ts` (tests in `web/tests/update.test.ts` first)
 - [ ] T043 Write tests then implement manifest signing-key rotation and revocation: the app pins a key list and a revocation list carried in signed manifests, and rejects a manifest signed by a revoked key, in `web/src/sw/keys.ts` and `build/rotate-signing-key.ts` (tests first)
 - [ ] T044 [P] Write the server secrets and KMS key rotation procedure with a rehearsal test in `server/deploy/rotation.md` and `server/tests/rotation.rs`
