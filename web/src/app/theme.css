@@ -1,0 +1,117 @@
+/* Colours are tokens; dark mode follows the system unless the user chose a theme. */
+:root {
+  --bg: #ffffff;
+  --fg: #14161a;
+  --muted: #4a5160;
+  --accent: #1a56db;
+  --accent-fg: #ffffff;
+  --border: #c5cad3;
+  --danger-bg: #fdecea;
+  --danger-fg: #8a1c14;
+  --focus: #b45309;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #0f1115;
+    --fg: #eceff4;
+    --muted: #aab1bf;
+    --accent: #7aa2ff;
+    --accent-fg: #0f1115;
+    --border: #3a4150;
+    --danger-bg: #3a1714;
+    --danger-fg: #ffb4ab;
+    --focus: #fbbf24;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #0f1115;
+  --fg: #eceff4;
+  --muted: #aab1bf;
+  --accent: #7aa2ff;
+  --accent-fg: #0f1115;
+  --border: #3a4150;
+  --danger-bg: #3a1714;
+  --danger-fg: #ffb4ab;
+  --focus: #fbbf24;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font:
+    1rem/1.5 system-ui,
+    sans-serif;
+}
+
+main,
+.app-header {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+}
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+  background: var(--bg);
+  padding: 0.5rem;
+}
+
+.button {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: var(--accent);
+  color: var(--accent-fg);
+  font: inherit;
+}
+
+.field input {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  padding: 0 0.75rem;
+}
+.hint {
+  color: var(--muted);
+}
+.error-text,
+.alert-urgent {
+  color: var(--danger-fg);
+}
+.alert {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+.alert-urgent {
+  background: var(--danger-bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
