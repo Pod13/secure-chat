@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://secure-chat.invalid/schema/link-request-create-response.json",
+  "title": "POST /devices/link-requests response",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 22,
+      "maxLength": 22
+    }
+  },
+  "required": [
+    "request_id"
+  ],
+  "examples": [
+    {
+      "request_id": "AAAAAAAAAAAAAAAAAAAAAA"
+    }
+  ]
+}

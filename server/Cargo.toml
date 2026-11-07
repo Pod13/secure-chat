@@ -11,3 +11,6 @@ workspace = true
 axum = { version = "=0.8.9", default-features = false, features = ["http1", "tokio"] }
 tokio = { version = "=1.54.1", features = ["macros", "net", "rt-multi-thread", "signal"] }
 sqlx = { version = "=0.9.0", default-features = false, features = ["migrate", "postgres", "runtime-tokio", "tls-rustls"] }
+jsonschema = { version = "=0.60.1", default-features = false }
+serde_json = "=1.0.154"
+getrandom = "=0.4.3"

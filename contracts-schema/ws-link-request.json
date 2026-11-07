@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://secure-chat.invalid/schema/ws-link-request.json",
+  "title": "WebSocket frame: link-request",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "enum": [
+        "link-request"
+      ]
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 22,
+      "maxLength": 22
+    },
+    "device_public_key": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 43,
+      "maxLength": 43
+    }
+  },
+  "required": [
+    "type",
+    "request_id",
+    "device_public_key"
+  ],
+  "examples": [
+    {
+      "type": "link-request",
+      "request_id": "AAAAAAAAAAAAAAAAAAAAAA",
+      "device_public_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    }
+  ]
+}

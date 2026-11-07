@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://secure-chat.invalid/schema/recovery-devices-request.json",
+  "title": "POST /recovery/devices request",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "identity_public_key": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 43,
+      "maxLength": 43
+    },
+    "device_public_key": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 43,
+      "maxLength": 43
+    },
+    "device_certificate": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 86,
+      "maxLength": 86
+    },
+    "key_packages": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_-]+$",
+        "minLength": 1,
+        "maxLength": 5462
+      },
+      "minItems": 1,
+      "maxItems": 100
+    },
+    "last_resort_key_package": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 5462
+    },
+    "signature": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 86,
+      "maxLength": 86
+    },
+    "label_blob": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 1366
+    }
+  },
+  "required": [
+    "identity_public_key",
+    "device_public_key",
+    "device_certificate",
+    "key_packages",
+    "last_resort_key_package",
+    "signature",
+    "label_blob"
+  ],
+  "examples": [
+    {
+      "identity_public_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "device_public_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "device_certificate": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key_packages": [
+        "A"
+      ],
+      "last_resort_key_package": "A",
+      "signature": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "label_blob": "A"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://secure-chat.invalid/schema/invite-redeem-response.json",
+  "title": "POST /invites/redeem response",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "devices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "delivery_token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "minLength": 43,
+            "maxLength": 43
+          },
+          "key_packages": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "minLength": 1,
+              "maxLength": 5462
+            },
+            "minItems": 1,
+            "maxItems": 2
+          }
+        },
+        "required": [
+          "delivery_token",
+          "key_packages"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 50
+    }
+  },
+  "required": [
+    "devices"
+  ],
+  "examples": [
+    {
+      "devices": [
+        {
+          "delivery_token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "key_packages": [
+            "A"
+          ]
+        }
+      ]
+    }
+  ]
+}

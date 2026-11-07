@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://secure-chat.invalid/schema/key-packages-fetch-response.json",
+  "title": "POST /key-packages/fetch response",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "key_packages": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_-]+$",
+        "minLength": 1,
+        "maxLength": 5462
+      },
+      "minItems": 1,
+      "maxItems": 2
+    }
+  },
+  "required": [
+    "key_packages"
+  ],
+  "examples": [
+    {
+      "key_packages": [
+        "A"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://secure-chat.invalid/schema/backup-put-request.json",
+  "title": "PUT /backup request",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "backup": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 11184811
+    },
+    "access_token_hash": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 43,
+      "maxLength": 43
+    }
+  },
+  "required": [
+    "backup",
+    "access_token_hash"
+  ],
+  "examples": [
+    {
+      "backup": "A",
+      "access_token_hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    }
+  ]
+}

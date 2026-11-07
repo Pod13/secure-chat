@@ -49,6 +49,7 @@ Deleted when the recipient Device acknowledges it, or at expiry.
 | Field | Type | Notes |
 |-------|------|-------|
 | invite_token_hash | hash | |
+| owner_account_id | ref | The creator, needed to revoke. The redeemer is never stored |
 | kind | enum | `service`, `contact`, `group` |
 | expires_at, max_uses, uses | | Group Invites may also require admin approval, which is enforced by Group admins' Devices, not the server |
 | revoked | bool | |

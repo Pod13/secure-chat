@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://secure-chat.invalid/schema/account-create-response.json",
+  "title": "POST /accounts response",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "account_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 22,
+      "maxLength": 22
+    },
+    "device_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 22,
+      "maxLength": 22
+    }
+  },
+  "required": [
+    "account_id",
+    "device_id"
+  ],
+  "examples": [
+    {
+      "account_id": "AAAAAAAAAAAAAAAAAAAAAA",
+      "device_id": "AAAAAAAAAAAAAAAAAAAAAA"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://secure-chat.invalid/schema/ws-ping.json",
+  "title": "WebSocket frame: ping",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "enum": [
+        "ping"
+      ]
+    }
+  },
+  "required": [
+    "type"
+  ],
+  "examples": [
+    {
+      "type": "ping"
+    }
+  ]
+}

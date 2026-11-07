@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://secure-chat.invalid/schema/account-create-request.json",
+  "title": "POST /accounts request",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "invite_token": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 43,
+      "maxLength": 43
+    },
+    "identity_public_key": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 43,
+      "maxLength": 43
+    },
+    "device_public_key": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 43,
+      "maxLength": 43
+    },
+    "device_certificate": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 86,
+      "maxLength": 86
+    },
+    "key_packages": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_-]+$",
+        "minLength": 1,
+        "maxLength": 5462
+      },
+      "minItems": 1,
+      "maxItems": 100
+    },
+    "last_resort_key_package": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 5462
+    },
+    "label_blob": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 1366
+    }
+  },
+  "required": [
+    "invite_token",
+    "identity_public_key",
+    "device_public_key",
+    "device_certificate",
+    "key_packages",
+    "last_resort_key_package",
+    "label_blob"
+  ],
+  "examples": [
+    {
+      "invite_token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "identity_public_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "device_public_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "device_certificate": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key_packages": [
+        "A"
+      ],
+      "last_resort_key_package": "A",
+      "label_blob": "A"
+    }
+  ]
+}

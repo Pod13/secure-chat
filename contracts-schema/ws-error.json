@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://secure-chat.invalid/schema/ws-error.json",
+  "title": "WebSocket frame: error",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "enum": [
+        "error"
+      ]
+    },
+    "code": {
+      "enum": [
+        "invalid_request",
+        "unauthorized",
+        "rate_limited",
+        "too_large"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "code"
+  ],
+  "examples": [
+    {
+      "type": "error",
+      "code": "invalid_request"
+    }
+  ]
+}

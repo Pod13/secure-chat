@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://secure-chat.invalid/schema/key-packages-put-request.json",
+  "title": "PUT /devices/me/key-packages request",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "key_packages": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_-]+$",
+        "minLength": 1,
+        "maxLength": 5462
+      },
+      "minItems": 1,
+      "maxItems": 100
+    },
+    "last_resort_key_package": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 5462
+    }
+  },
+  "required": [
+    "key_packages"
+  ],
+  "examples": [
+    {
+      "key_packages": [
+        "A"
+      ]
+    }
+  ]
+}

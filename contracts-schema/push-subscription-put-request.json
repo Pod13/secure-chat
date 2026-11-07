@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://secure-chat.invalid/schema/push-subscription-put-request.json",
+  "title": "PUT /push-subscription request",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "endpoint": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048
+    },
+    "p256dh": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 87
+    },
+    "auth": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 22
+    }
+  },
+  "required": [
+    "endpoint",
+    "p256dh",
+    "auth"
+  ],
+  "examples": [
+    {
+      "endpoint": "A",
+      "p256dh": "A",
+      "auth": "A"
+    }
+  ]
+}

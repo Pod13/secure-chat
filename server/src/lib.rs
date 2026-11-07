@@ -2,6 +2,8 @@
 
 use axum::{Router, routing::get};
 
+pub mod ports;
+
 /// Liveness probe. Carries no user data.
 async fn healthz() -> &'static str {
     "ok"

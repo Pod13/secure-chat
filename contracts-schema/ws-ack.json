@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://secure-chat.invalid/schema/ws-ack.json",
+  "title": "WebSocket frame: ack",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "enum": [
+        "ack"
+      ]
+    },
+    "envelope_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_-]+$",
+        "minLength": 22,
+        "maxLength": 22
+      },
+      "minItems": 1,
+      "maxItems": 100
+    }
+  },
+  "required": [
+    "type",
+    "envelope_ids"
+  ],
+  "examples": [
+    {
+      "type": "ack",
+      "envelope_ids": [
+        "AAAAAAAAAAAAAAAAAAAAAA"
+      ]
+    }
+  ]
+}

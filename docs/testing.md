@@ -17,3 +17,21 @@ Constitution X and XIII: tests are written first, every requirement maps to a te
 - Security-critical logic is deterministic. Clock, randomness, storage and network are injected through the ports in `server/src/ports.rs` and `web/src/ports.ts`, with in-memory fakes in the test directories.
 - Mutation testing shows whether assertions are meaningful. A surviving mutant in a security-critical module is fixed by adding a test, not by excluding the code.
 - Browser end-to-end tests run the Playwright matrix in `web/playwright.config.ts` (Chrome, Safari/WebKit, Firefox, Edge, plus Android and iPhone emulation).
+
+## Database tests (server)
+
+`server/tests/migrations.rs` needs a disposable PostgreSQL server and reads `DATABASE_URL`. It fails with a clear message when the variable is unset; it is never silently skipped. Each test works in its own schema.
+
+Run a throwaway server without installing a service (Homebrew PostgreSQL 16 shown):
+
+```sh
+PGBIN=/opt/homebrew/opt/postgresql@16/bin
+$PGBIN/initdb -D /tmp/sc-pgdata -U postgres --auth=trust -E UTF8
+$PGBIN/pg_ctl -D /tmp/sc-pgdata -o "-p 55432 -k /tmp" -l /tmp/sc-pg.log -w start
+export DATABASE_URL=postgres://postgres@localhost:55432/postgres
+cargo test --all-features
+$PGBIN/pg_ctl -D /tmp/sc-pgdata stop      # when finished
+```
+
+CI uses a `postgres:16` service container (see `.github/workflows/ci.yml`).
+

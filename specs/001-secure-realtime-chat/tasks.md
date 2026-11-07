@@ -55,14 +55,14 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 
 - [ ] T013 Review and sign off `specs/001-secure-realtime-chat/threat-model.md` with the security lead (threat-model task, Constitution X)
 - [X] T014 Run spike T-spike-1: build OpenMLS to WASM, run it in Chrome, Safari, Firefox and Edge, measure a 256-Member re-key against the 5 s target, confirm no `crypto-bigint` code is reachable in the built WASM (accepted risk RUSTSEC-2026-0387, `docs/accepted-risks.md`), and record the result in `specs/001-secure-realtime-chat/research.md` (fallback: mls-rs)
-- [ ] T015 [P] Write JSON Schemas with strict size limits for every message in `contracts/` into `contracts-schema/*.json`
-- [ ] T016 [P] Write the server-adversary harness in `server/tests/adversary.rs`: dump all tables, blobs, logs and metrics during end-to-end flows and fail on plaintext or key material (must fail until features exist)
-- [ ] T017 [P] Write schema-validation security tests (oversized, unknown-field and malformed inputs) in `server/tests/validation.rs`
-- [ ] T018 Define injected I/O ports (clock, randomness, storage, network) for security-critical code in `server/src/ports.rs` and `web/src/ports.ts`, with in-memory fakes in `server/tests/fakes.rs` and `web/tests/fakes.ts`, so security logic is deterministic and testable
+- [X] T015 [P] Write JSON Schemas with strict size limits for every message in `contracts/` into `contracts-schema/*.json`
+- [X] T016 [P] Write the server-adversary harness in `server/tests/adversary.rs`: dump all tables, blobs, logs and metrics during end-to-end flows and fail on plaintext or key material (must fail until features exist)
+- [X] T017 [P] Write schema-validation security tests (oversized, unknown-field and malformed inputs) in `server/tests/validation.rs`
+- [X] T018 Define injected I/O ports (clock, randomness, storage, network) for security-critical code in `server/src/ports.rs` and `web/src/ports.ts`, with in-memory fakes in `server/tests/fakes.rs` and `web/tests/fakes.ts`, so security logic is deterministic and testable
 
 ### Server foundation
 
-- [ ] T019 Create the initial migrations for accounts, devices, delivery tokens, envelopes, invites and blobs in `server/migrations/0001_init.sql` per data-model.md, with no column that links an Invite to the Account it created
+- [X] T019 Create the initial migrations for accounts, devices, delivery tokens, envelopes, invites and blobs in `server/migrations/0001_init.sql` per data-model.md, with no column that links an Invite to the Account it created
 - [ ] T020 [P] Implement configuration and secrets loading (no secrets in files) in `server/src/config.rs`
 - [ ] T021 [P] Implement structured, tamper-evident logging that excludes content, keys, tokens and full IPs in `server/src/logging.rs`
 - [ ] T022 Write tests then implement Device challenge-response authentication and 15-minute Device-bound tokens in `server/src/auth/` (tests in `server/tests/auth.rs` first)

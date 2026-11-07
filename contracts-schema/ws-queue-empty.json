@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://secure-chat.invalid/schema/ws-queue-empty.json",
+  "title": "WebSocket frame: queue-empty",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "enum": [
+        "queue-empty"
+      ]
+    }
+  },
+  "required": [
+    "type"
+  ],
+  "examples": [
+    {
+      "type": "queue-empty"
+    }
+  ]
+}

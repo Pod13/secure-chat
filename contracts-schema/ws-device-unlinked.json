@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://secure-chat.invalid/schema/ws-device-unlinked.json",
+  "title": "WebSocket frame: device-unlinked",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "enum": [
+        "device-unlinked"
+      ]
+    },
+    "reason": {
+      "enum": [
+        "unlinked",
+        "recovered"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "reason"
+  ],
+  "examples": [
+    {
+      "type": "device-unlinked",
+      "reason": "unlinked"
+    }
+  ]
+}

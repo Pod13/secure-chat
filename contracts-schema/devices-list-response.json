@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://secure-chat.invalid/schema/devices-list-response.json",
+  "title": "GET /devices response",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "devices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "minLength": 22,
+            "maxLength": 22
+          },
+          "label_blob": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "minLength": 1,
+            "maxLength": 1366
+          }
+        },
+        "required": [
+          "id",
+          "label_blob"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 50
+    }
+  },
+  "required": [
+    "devices"
+  ],
+  "examples": [
+    {
+      "devices": [
+        {
+          "id": "AAAAAAAAAAAAAAAAAAAAAA",
+          "label_blob": "A"
+        }
+      ]
+    }
+  ]
+}

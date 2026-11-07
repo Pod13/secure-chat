@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://secure-chat.invalid/schema/deliver-response.json",
+  "title": "POST /deliver response",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "envelope_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 22,
+      "maxLength": 22
+    }
+  },
+  "required": [
+    "envelope_id"
+  ],
+  "examples": [
+    {
+      "envelope_id": "AAAAAAAAAAAAAAAAAAAAAA"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://secure-chat.invalid/schema/ws-envelope.json",
+  "title": "WebSocket frame: envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "enum": [
+        "envelope"
+      ]
+    },
+    "envelope_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 22,
+      "maxLength": 22
+    },
+    "ciphertext": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 174763
+    },
+    "enqueued_at": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4102444800
+    }
+  },
+  "required": [
+    "type",
+    "envelope_id",
+    "ciphertext",
+    "enqueued_at"
+  ],
+  "examples": [
+    {
+      "type": "envelope",
+      "envelope_id": "AAAAAAAAAAAAAAAAAAAAAA",
+      "ciphertext": "A",
+      "enqueued_at": 0
+    }
+  ]
+}
