@@ -43,6 +43,13 @@ export interface Sodium {
   deriveKey(passcode: string, salt: Uint8Array, params?: KdfParams): Uint8Array;
   /** 16-byte keyed BLAKE2b hash: a stable label that reveals nothing about `data` without the key. */
   keyedHash(key: Uint8Array, data: Uint8Array): Uint8Array;
+  /** Ed25519 key pair from a 32-byte seed. */
+  signingKeyPair(seed: Uint8Array): { publicKey: Uint8Array; secretKey: Uint8Array };
+  /** Ed25519 detached signature (64 bytes). Used by the release tooling and tests. */
+  signDetached(secretKey: Uint8Array, message: Uint8Array): Uint8Array;
+  /** True only for a valid signature; any malformed input is simply false. */
+  verifyDetached(signature: Uint8Array, message: Uint8Array, publicKey: Uint8Array): boolean;
+  sha256(data: Uint8Array): Uint8Array;
   /** Returns nonce || ciphertext || tag. */
   seal(key: Uint8Array, plaintext: Uint8Array, aad?: Uint8Array): Uint8Array;
   /** Reverses `seal`; throws `CryptoError` for anything that does not authenticate. */
@@ -53,6 +60,52 @@ function requireKey(key: Uint8Array): void {
   if (key.length !== KEY_BYTES) throw new CryptoError('bad_key');
 }
 
+type SigningTools = Pick<Sodium, 'signingKeyPair' | 'signDetached' | 'verifyDetached' | 'sha256'>;
+
+function signingTools(lib: typeof sodiumLib): SigningTools {
+  return {
+    signingKeyPair(seed) {
+      if (seed.length !== lib.crypto_sign_SEEDBYTES) throw new CryptoError('bad_key');
+      const { publicKey, privateKey } = lib.crypto_sign_seed_keypair(seed);
+      return { publicKey, secretKey: privateKey };
+    },
+
+    signDetached(secretKey, message) {
+      if (secretKey.length !== lib.crypto_sign_SECRETKEYBYTES) throw new CryptoError('bad_key');
+      return lib.crypto_sign_detached(message, secretKey);
+    },
+
+    verifyDetached(signature, message, publicKey) {
+      const sized =
+        signature.length === lib.crypto_sign_BYTES &&
+        publicKey.length === lib.crypto_sign_PUBLICKEYBYTES;
+      return sized && lib.crypto_sign_verify_detached(signature, message, publicKey);
+    },
+
+    sha256: (data) => lib.crypto_hash_sha256(data),
+  };
+}
+
+function deriveKey(
+  lib: typeof sodiumLib,
+  passcode: string,
+  salt: Uint8Array,
+  params: KdfParams,
+): Uint8Array {
+  if (salt.length !== SALT_BYTES) throw new CryptoError('bad_salt');
+  if (params.opslimit < MIN_KDF.opslimit || params.memlimit < MIN_KDF.memlimit) {
+    throw new CryptoError('weak_kdf');
+  }
+  return lib.crypto_pwhash(
+    KEY_BYTES,
+    passcode.normalize('NFKC'),
+    salt,
+    params.opslimit,
+    params.memlimit,
+    lib.crypto_pwhash_ALG_ARGON2ID13,
+  );
+}
+
 export async function createSodium(random: Random): Promise<Sodium> {
   await sodiumLib.ready;
   const lib = sodiumLib;
@@ -61,25 +114,14 @@ export async function createSodium(random: Random): Promise<Sodium> {
     randomKey: () => random.bytes(KEY_BYTES),
     newSalt: () => random.bytes(SALT_BYTES),
 
-    deriveKey(passcode, salt, params = DEFAULT_KDF) {
-      if (salt.length !== SALT_BYTES) throw new CryptoError('bad_salt');
-      if (params.opslimit < MIN_KDF.opslimit || params.memlimit < MIN_KDF.memlimit) {
-        throw new CryptoError('weak_kdf');
-      }
-      return lib.crypto_pwhash(
-        KEY_BYTES,
-        passcode.normalize('NFKC'),
-        salt,
-        params.opslimit,
-        params.memlimit,
-        lib.crypto_pwhash_ALG_ARGON2ID13,
-      );
-    },
+    deriveKey: (passcode, salt, params = DEFAULT_KDF) => deriveKey(lib, passcode, salt, params),
 
     keyedHash(key, data) {
       requireKey(key);
       return lib.crypto_generichash(HASH_BYTES, data, key);
     },
+
+    ...signingTools(lib),
 
     seal(key, plaintext, aad = new Uint8Array()) {
       requireKey(key);

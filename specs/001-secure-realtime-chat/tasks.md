@@ -87,7 +87,7 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 
 ### Client integrity
 
-- [ ] T038 Write tests then implement the reproducible build, content-hashed assets and signed manifest in `build/build.sh` and `build/sign-manifest.ts`
+- [X] T038 Write tests then implement the reproducible build, content-hashed assets and signed manifest in `build/build.sh` and `build/sign-manifest.ts`
 - [ ] T039 Write tests then implement the service worker that refuses assets not in the manifest in `web/src/sw/sw.ts` (test in `web/tests/sw.test.ts` first)
 - [ ] T040 [P] Enforce CSP without `unsafe-inline` or `unsafe-eval`, SRI and Trusted Types in `web/index.html` and `web/src/app/trustedTypes.ts`
 - [ ] T041 [P] Add provenance attestation and release signing steps in `.github/workflows/release.yml` (signing keys in an HSM, never on developer machines)

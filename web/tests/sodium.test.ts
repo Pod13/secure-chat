@@ -166,3 +166,45 @@ describe('keyed hash', () => {
     expect(code(() => sodium.keyedHash(new Uint8Array(31), text))).toBe('bad_key');
   });
 });
+
+describe('signatures and hashes', () => {
+  const seed = new Uint8Array(32).fill(5);
+
+  test('a signature checks out for the same message and public key only', () => {
+    const pair = sodium.signingKeyPair(seed);
+    expect(pair.publicKey.length).toBe(32);
+    const message = new TextEncoder().encode('release 1.0.0');
+    const signature = sodium.signDetached(pair.secretKey, message);
+    expect(signature.length).toBe(64);
+    expect(sodium.verifyDetached(signature, message, pair.publicKey)).toBe(true);
+    expect(
+      sodium.verifyDetached(signature, new TextEncoder().encode('release 1.0.1'), pair.publicKey),
+    ).toBe(false);
+    const other = sodium.signingKeyPair(new Uint8Array(32).fill(6));
+    expect(sodium.verifyDetached(signature, message, other.publicKey)).toBe(false);
+    const changed = signature.slice();
+    changed[0] = (changed[0] ?? 0) ^ 1;
+    expect(sodium.verifyDetached(changed, message, pair.publicKey)).toBe(false);
+  });
+
+  test('the same seed always gives the same key pair', () => {
+    expect(toHex(sodium.signingKeyPair(seed).publicKey)).toBe(
+      toHex(sodium.signingKeyPair(seed).publicKey),
+    );
+  });
+
+  test('malformed keys and signatures are refused without throwing', () => {
+    const pair = sodium.signingKeyPair(seed);
+    const message = new Uint8Array(3);
+    expect(sodium.verifyDetached(new Uint8Array(63), message, pair.publicKey)).toBe(false);
+    expect(sodium.verifyDetached(new Uint8Array(64), message, new Uint8Array(31))).toBe(false);
+    expect(code(() => sodium.signDetached(new Uint8Array(10), message))).toBe('bad_key');
+    expect(code(() => sodium.signingKeyPair(new Uint8Array(31)))).toBe('bad_key');
+  });
+
+  test('sha256 matches the standard test vector for "abc"', () => {
+    expect(toHex(sodium.sha256(new TextEncoder().encode('abc')))).toBe(
+      'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+    );
+  });
+});
