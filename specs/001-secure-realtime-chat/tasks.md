@@ -79,7 +79,7 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 - [X] T030 Write tests then implement the OpenMLS wrapper (create group, add, remove, commit, encrypt, decrypt) with fixed-bucket padding, accepting only the one configured ciphersuite and rejecting all others with a test (accepted risk RUSTSEC-2026-0387) in `crypto-wasm/src/lib.rs` and `crypto-wasm/src/padding.rs` (tests in `crypto-wasm/tests/` first)
 - [X] T031 [P] Add cargo-fuzz targets for MLS message handling and padding in `crypto-wasm/fuzz/`
 - [X] T032 [P] Add cargo-fuzz targets for the HTTP request, WebSocket frame and schema-validation parsers in `server/fuzz/`
-- [ ] T033 [P] Add the typed crypto bridge in `web/src/crypto/bridge.ts` and the libsodium helpers (Argon2id, XChaCha20-Poly1305) in `web/src/crypto/sodium.ts`
+- [X] T033 [P] Add the typed crypto bridge in `web/src/crypto/bridge.ts` and the libsodium helpers (Argon2id, XChaCha20-Poly1305) in `web/src/crypto/sodium.ts`
 - [ ] T034 Write tests then implement the encrypted local vault: data key, Argon2id passcode wrapping, encrypted IndexedDB records in `web/src/store/vault.ts` (tests in `web/tests/vault.test.ts` first)
 - [ ] T035 [P] Implement the WebSocket client with automatic reconnect in `web/src/net/socket.ts`
 - [ ] T036 Implement the encrypted outgoing queue with client-generated ids for de-duplication in `web/src/net/outbox.ts`

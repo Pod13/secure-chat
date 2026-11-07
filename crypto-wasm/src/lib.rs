@@ -5,6 +5,7 @@
 //! welcome is checked against the shipped suite before anything else happens to it.
 
 pub mod padding;
+pub mod wasm;
 
 use openmls::group::PURE_CIPHERTEXT_WIRE_FORMAT_POLICY;
 use openmls::group::{MlsGroup, MlsGroupCreateConfig, MlsGroupJoinConfig, StagedWelcome};
@@ -41,6 +42,19 @@ pub enum Error {
     /// MLS refused the operation (not a member, replay, bad signature, wrong epoch, ...).
     Rejected,
     TooLarge,
+}
+
+impl Error {
+    /// A stable name for the error, the only error detail that crosses into JavaScript.
+    pub fn code(&self) -> &'static str {
+        match self {
+            Self::Malformed => "malformed",
+            Self::UnsupportedCiphersuite => "unsupported_ciphersuite",
+            Self::UnknownGroup => "unknown_group",
+            Self::Rejected => "rejected",
+            Self::TooLarge => "too_large",
+        }
+    }
 }
 
 /// What a received group message turned out to be.
