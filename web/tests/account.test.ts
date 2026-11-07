@@ -39,6 +39,7 @@ function fakeBridge() {
     close: () => void closed.push('device'),
   } as unknown as Device;
   const bridge: MlsBridge = {
+    route: () => ({ kind: 'welcome' }),
     newDevice: (identity) => {
       made.push(identity);
       return device;

@@ -127,12 +127,15 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 - [X] T059 [US1] Generate the Recovery Key at sign-up, show it once, and derive the Account identity key (its private half only signs Device certificates at sign-up and recovery and is never stored), Backup key and Backup access token with HKDF using distinct labels in `web/src/crypto/recoverykeys.ts`
 - [X] T157 [US1] Save and restore a Device's MLS state (keys, credential, groups) so a reload does not lose Conversations, in `crypto-wasm/src/state.rs`, `crypto-wasm/src/wasm.rs` and `web/src/crypto/bridge.ts` (prerequisite of T058; found missing while implementing it)
 - [X] T158 [US1] Produce the last-resort key package the server hands out when single-use ones run out (FR-006, T056) in `crypto-wasm/src/lib.rs`
+- [X] T159 [US1] Device login with a signed challenge and the authenticated and anonymous calls conversations need, in `web/src/net/api.ts` (found missing while implementing T061)
+- [X] T160 [US1] Classify incoming envelopes (Welcome or group message, and which group) before decrypting, in `crypto-wasm/src/lib.rs` and `web/src/crypto/bridge.ts` (found missing while implementing T061)
+- [X] T161 [US1] Conversation history and message status store (sealed in the vault) in `web/src/store/history.ts`; Messenger with encrypted outbox, per-conversation ordering and delivery receipts in `web/src/net/delivery.ts`
 - [ ] T060 [US1] Build Invite creation, sharing and QR code in `web/src/app/screens/Invite.tsx`
 - [ ] T061 [US1] Implement joining by Invite and starting a 1:1 Conversation in `web/src/app/screens/JoinInvite.tsx` and `web/src/crypto/conversation.ts`
 - [ ] T062 [US1] Build the conversation view with text sending, receive, and status (sending, sent, delivered) in `web/src/app/screens/Conversation.tsx`
 - [ ] T063 [US1] Implement replies, reactions and edits as encrypted application messages in `web/src/crypto/messagetypes.ts` and render them in `web/src/app/screens/Conversation.tsx` (FR-013)
-- [ ] T064 [US1] Implement acknowledgements, status messages and offline catch-up in `web/src/net/delivery.ts`
-- [ ] T065 [US1] Notify the sender when a message expires undelivered in `web/src/net/expiry.ts`
+- [X] T064 [US1] Implement acknowledgements, status messages and offline catch-up in `web/src/net/delivery.ts`
+- [X] T065 [US1] Notify the sender when a message expires undelivered in `web/src/net/expiry.ts`
 - [ ] T066 [US1] Security and simplicity review for US1 (a reviewer other than the author can explain the code; complexity limits met), then update `threat-model.md` and `data-inventory.md` (security review and documentation task)
 
 **Checkpoint**: User Story 1 is fully functional and testable on its own.

@@ -3,7 +3,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use crypto_wasm::Error;
-use crypto_wasm::wasm::{KIND_GROUP_CHANGED, KIND_MESSAGE, KIND_REMOVED, WasmClient};
+use crypto_wasm::wasm::{KIND_GROUP_CHANGED, KIND_MESSAGE, KIND_REMOVED, WasmClient, WasmRoute};
 
 fn pair() -> (WasmClient, WasmClient, Vec<u8>) {
     let alice = WasmClient::new(b"alice").unwrap();
@@ -86,4 +86,22 @@ fn state_and_last_resort_packages_cross_the_api_as_bytes() {
         alice.key_package().unwrap()
     );
     assert_eq!(WasmClient::restore(b"junk").err().unwrap(), "malformed");
+}
+
+#[test]
+fn routes_cross_the_api_as_a_flag_and_bytes() {
+    let alice = WasmClient::new(b"alice").unwrap();
+    let bob = WasmClient::new(b"bob").unwrap();
+    let group = alice.create_group().unwrap();
+    let message = alice.encrypt(&group, b"hi").unwrap();
+    let route: WasmRoute = WasmClient::route(&message).unwrap();
+    assert!(!route.is_welcome());
+    assert_eq!(route.group(), group);
+    let added = alice
+        .add_member(&group, &bob.key_package().unwrap())
+        .unwrap();
+    let welcome = WasmClient::route(&added.welcome()).unwrap();
+    assert!(welcome.is_welcome());
+    assert!(welcome.group().is_empty());
+    assert_eq!(WasmClient::route(b"junk").err().unwrap(), "malformed");
 }

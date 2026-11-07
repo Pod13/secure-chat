@@ -26,6 +26,12 @@ function fakeModule(spy: Spy, suite = EXPECTED_CIPHERSUITE): MlsModule {
     key_package = () => guard(bytes(1));
     last_resort_key_package = () => guard(bytes(8));
     export_state = () => guard(bytes(9, ...this.identity));
+    static route = (data: Uint8Array) =>
+      guard({
+        is_welcome: () => data[0] === 0,
+        group: () => bytes(...data.slice(1)),
+        free: () => spy.freed.push('route'),
+      });
     static restore = (state: Uint8Array) => guard(new Fake(state.slice(1)));
     create_group = () => guard(bytes(2));
     add_member = (_g: Uint8Array, kp: Uint8Array) =>
@@ -216,5 +222,20 @@ describe('errors, unknown', () => {
       () => d.members(bytes(0)),
     ];
     for (const operation of operations) expect(codeOf(operation)).toBe('rejected');
+  });
+});
+
+describe('route', () => {
+  test('tells a Welcome from a group message and frees the module object', () => {
+    const spy: Spy = { freed: [] };
+    const bridge = createBridge(fakeModule(spy));
+    expect(bridge.route(bytes(0))).toEqual({ kind: 'welcome' });
+    expect(bridge.route(bytes(1, 4, 5))).toEqual({ kind: 'group', group: bytes(4, 5) });
+    expect(spy.freed).toEqual(['route', 'route']);
+  });
+
+  test('turns a module failure into a coded bridge error', () => {
+    const bridge = createBridge(fakeModule({ freed: [], failWith: 'malformed' }));
+    expect(() => bridge.route(bytes(9))).toThrow(BridgeError);
   });
 });

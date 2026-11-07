@@ -1,7 +1,7 @@
 //! The surface exposed to JavaScript. It only moves bytes: all rules live in `Client`.
 //! Errors cross the boundary as a short code string and nothing else.
 
-use crate::{Added, Client, Received};
+use crate::{Added, Client, Received, Route};
 use std::cell::RefCell;
 use wasm_bindgen::prelude::wasm_bindgen;
 
@@ -23,6 +23,23 @@ impl WasmAdded {
     }
     pub fn welcome(&self) -> Vec<u8> {
         self.0.welcome.clone()
+    }
+}
+
+#[wasm_bindgen]
+pub struct WasmRoute(Route);
+
+#[wasm_bindgen]
+impl WasmRoute {
+    pub fn is_welcome(&self) -> bool {
+        self.0 == Route::Welcome
+    }
+    /// The group id for a group message; empty for a Welcome.
+    pub fn group(&self) -> Vec<u8> {
+        match &self.0 {
+            Route::Group(id) => id.clone(),
+            Route::Welcome => Vec::new(),
+        }
     }
 }
 
@@ -57,6 +74,10 @@ impl WasmClient {
         Client::new(identity)
             .map(|c| Self(RefCell::new(c)))
             .map_err(code)
+    }
+    /// Classifies an incoming envelope before it is decrypted.
+    pub fn route(bytes: &[u8]) -> Result<WasmRoute, String> {
+        Client::route(bytes).map(WasmRoute).map_err(code)
     }
     /// Rebuilds a Device from bytes made by `export_state`.
     pub fn restore(state: &[u8]) -> Result<WasmClient, String> {

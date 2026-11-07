@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import {
   MAX_EMOJI_CHARS,
+  MAX_ENDPOINTS,
   MAX_TEXT_CHARS,
   decodeMessage,
   emptyConversation,
@@ -18,6 +19,7 @@ const text = (n: number, body: string, at = 1000 + n): Wire => ({
   content: { kind: 'text', text: body },
 });
 const decoder = new TextDecoder();
+const encoder = new TextEncoder();
 
 describe('encoding', () => {
   test('round-trips every kind of message', () => {
@@ -309,5 +311,91 @@ describe('receiving reactions, edge cases', () => {
     });
     const reused = receive(state, bob, text(2, 'sneaky'));
     expect(reused.order).toEqual([id(1)]);
+  });
+});
+
+describe('endpoints', () => {
+  const token = (n: number): string => String.fromCharCode(65 + (n % 26)).repeat(43);
+  const wireWith = (tokens: unknown): Uint8Array =>
+    encoder.encode(
+      JSON.stringify({ v: 1, id: id(1), at: 1, content: { kind: 'endpoints', tokens } }),
+    );
+
+  test('round-trip through encoding', () => {
+    const wire: Wire = {
+      v: 1,
+      id: id(1),
+      at: 5,
+      content: { kind: 'endpoints', tokens: [token(1)] },
+    };
+    expect(decodeMessage(encodeMessage(wire))).toEqual(wire);
+  });
+
+  test('accept between 1 and 50 well-formed tokens', () => {
+    expect(decodeMessage(wireWith([token(1)]))).toBeDefined();
+    expect(
+      decodeMessage(wireWith(Array.from({ length: MAX_ENDPOINTS }, (_, i) => token(i)))),
+    ).toBeDefined();
+  });
+});
+
+describe('endpoints, refused shapes', () => {
+  const token = (n: number): string => String.fromCharCode(65 + (n % 26)).repeat(43);
+  const wireWith = (tokens: unknown): Uint8Array =>
+    encoder.encode(
+      JSON.stringify({ v: 1, id: id(1), at: 1, content: { kind: 'endpoints', tokens } }),
+    );
+
+  test.each([
+    ['none', []],
+    ['too many', Array.from({ length: MAX_ENDPOINTS + 1 }, (_, i) => token(i))],
+    ['a short token', ['AAAA']],
+    ['a long token', ['A'.repeat(44)]],
+    ['a token with other characters', ['!'.repeat(43)]],
+    ['a number', [5]],
+    ['not a list', 'A'.repeat(43)],
+  ])('refuse %s', (_name, tokens) => {
+    expect(decodeMessage(wireWith(tokens))).toBeUndefined();
+  });
+
+  test('refuse extra fields', () => {
+    const body = JSON.stringify({
+      v: 1,
+      id: id(1),
+      at: 1,
+      content: { kind: 'endpoints', tokens: [token(1)], extra: 1 },
+    });
+    expect(decodeMessage(encoder.encode(body))).toBeUndefined();
+  });
+
+  test('change nothing in the conversation view', () => {
+    const state = emptyConversation();
+    const wire: Wire = {
+      v: 1,
+      id: id(1),
+      at: 5,
+      content: { kind: 'endpoints', tokens: [token(1)] },
+    };
+    expect(receive(state, 'alice', wire)).toBe(state);
+  });
+});
+
+describe('delivery receipts', () => {
+  const receipt = (to: unknown, extra: object = {}): Uint8Array =>
+    encoder.encode(
+      JSON.stringify({ v: 1, id: id(1), at: 1, content: { kind: 'delivered', to, ...extra } }),
+    );
+
+  test('round-trip and leave the conversation view alone', () => {
+    const wire: Wire = { v: 1, id: id(1), at: 5, content: { kind: 'delivered', to: id(7) } };
+    expect(decodeMessage(encodeMessage(wire))).toEqual(wire);
+    const state = emptyConversation();
+    expect(receive(state, 'bob', wire)).toBe(state);
+  });
+
+  test('refuse a bad target or extra fields', () => {
+    expect(decodeMessage(receipt('nope'))).toBeUndefined();
+    expect(decodeMessage(receipt(5))).toBeUndefined();
+    expect(decodeMessage(receipt(id(2), { extra: 1 }))).toBeUndefined();
   });
 });

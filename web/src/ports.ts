@@ -23,6 +23,8 @@ export interface HttpRequest {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
   path: string;
   body?: Uint8Array;
+  /** Session token for calls that need a logged-in Device; the adapter sends it as a bearer header. */
+  token?: string;
 }
 
 export interface HttpResponse {

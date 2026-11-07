@@ -61,6 +61,7 @@ export interface MlsModule {
   ciphersuite_id(): number;
   WasmClient: (new (identity: Uint8Array) => WasmClientLike) & {
     restore(state: Uint8Array): WasmClientLike;
+    route(bytes: Uint8Array): { is_welcome(): boolean; group(): Uint8Array } & Freeable;
   };
 }
 
@@ -173,7 +174,12 @@ function toReceived(kind: number, message: Uint8Array): Received {
   }
 }
 
+/** Where an incoming envelope belongs, found before anything is decrypted. */
+export type Route = { kind: 'welcome' } | { kind: 'group'; group: Uint8Array };
+
 export interface MlsBridge {
+  /** Classifies an incoming envelope; throws `BridgeError('malformed')` for anything else. */
+  route(bytes: Uint8Array): Route;
   newDevice(identity: Uint8Array): Device;
   /** Continues as a Device saved with `exportState`. */
   restoreDevice(state: Uint8Array): Device;
@@ -184,6 +190,15 @@ export function createBridge(module: MlsModule): MlsBridge {
   if (module.ciphersuite_id() !== EXPECTED_CIPHERSUITE)
     throw new BridgeError('incompatible_module');
   return {
+    route: (bytes) =>
+      call(() => {
+        const route = module.WasmClient.route(bytes);
+        try {
+          return route.is_welcome() ? { kind: 'welcome' } : { kind: 'group', group: route.group() };
+        } finally {
+          route.free();
+        }
+      }),
     newDevice: (identity) => call(() => new Device(new module.WasmClient(identity))),
     restoreDevice: (state) => call(() => new Device(module.WasmClient.restore(state))),
   };

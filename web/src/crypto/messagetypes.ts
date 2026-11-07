@@ -8,12 +8,19 @@ export const MAX_EMOJI_CHARS = 16;
 /** A whole message, as bytes, is never larger than this. */
 const MAX_WIRE_BYTES = 65_536;
 const ID_PATTERN = /^[0-9a-f]{32}$/;
+const TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
+/** More than this many Devices per Account is never legitimate. */
+export const MAX_ENDPOINTS = 50;
 
 export type Content =
   | { kind: 'text'; text: string }
   | { kind: 'reply'; to: string; text: string }
   | { kind: 'reaction'; to: string; emoji: string; remove: boolean }
-  | { kind: 'edit'; to: string; text: string };
+  | { kind: 'edit'; to: string; text: string }
+  /** Delivery tokens (one per Device) at which the sender can be reached in this Conversation. */
+  | { kind: 'endpoints'; tokens: string[] }
+  /** The recipient's Device received and decrypted message `to`. */
+  | { kind: 'delivered'; to: string };
 
 export interface Wire {
   v: 1;
@@ -44,7 +51,15 @@ interface Shape {
   valid(c: Fields): boolean;
 }
 
+const isTokens = (value: unknown): value is string[] =>
+  Array.isArray(value) &&
+  value.length >= 1 &&
+  value.length <= MAX_ENDPOINTS &&
+  value.every((token) => typeof token === 'string' && TOKEN_PATTERN.test(token));
+
 const SHAPES = new Map<string, Shape>([
+  ['delivered', { keys: ['kind', 'to'], valid: (c) => isId(c.to) }],
+  ['endpoints', { keys: ['kind', 'tokens'], valid: (c) => isTokens(c.tokens) }],
   ['text', { keys: ['kind', 'text'], valid: (c) => isText(c.text) }],
   ['reply', { keys: ['kind', 'to', 'text'], valid: (c) => isId(c.to) && isText(c.text) }],
   ['edit', { keys: ['kind', 'to', 'text'], valid: (c) => isId(c.to) && isText(c.text) }],
@@ -187,5 +202,8 @@ export function receive(state: Conversation, author: string, wire: Wire): Conver
       return edit(state, author, wire, content.to, content.text);
     case 'reaction':
       return react(state, author, wire, content.to, content.emoji, content.remove);
+    case 'endpoints':
+    case 'delivered':
+      return state; // Handled by the conversation and delivery layers; nothing to show.
   }
 }

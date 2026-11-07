@@ -63,3 +63,4 @@ spikes/**/pkg/
 
 # Local dev state (database, throwaway certificate)
 .local/
+.wasm-node/

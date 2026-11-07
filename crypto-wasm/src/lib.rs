@@ -59,6 +59,15 @@ impl Error {
     }
 }
 
+/// Where an incoming envelope belongs, read before anything is decrypted.
+#[derive(Debug, PartialEq, Eq)]
+pub enum Route {
+    /// An invitation to join a group: give it to `join`.
+    Welcome,
+    /// A message or commit for this group: give it to `receive`.
+    Group(Vec<u8>),
+}
+
 /// What a received group message turned out to be.
 #[derive(Debug, PartialEq, Eq)]
 pub enum Received {
@@ -174,6 +183,18 @@ impl Client {
             )
             .map_err(|_| Error::Rejected)?;
         encode(&MlsMessageOut::from(bundle.key_package().clone()))
+    }
+
+    /// Classifies an incoming envelope. Anything that is not a Welcome or an encrypted group
+    /// message (a key package, a plaintext handshake, junk) is refused.
+    pub fn route(bytes: &[u8]) -> Result<Route, Error> {
+        match parse(bytes)? {
+            MlsMessageBodyIn::Welcome(_) => Ok(Route::Welcome),
+            MlsMessageBodyIn::PrivateMessage(message) => {
+                Ok(Route::Group(message.group_id().as_slice().to_vec()))
+            }
+            _ => Err(Error::Malformed),
+        }
     }
 
     /// Starts a group with only this Device in it; returns the group id.
