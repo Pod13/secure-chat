@@ -54,7 +54,7 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 ### Threat model, spikes and test harness (first)
 
 - [ ] T013 Review and sign off `specs/001-secure-realtime-chat/threat-model.md` with the security lead (threat-model task, Constitution X)
-- [ ] T014 Run spike T-spike-1: build OpenMLS to WASM, run it in Chrome, Safari, Firefox and Edge, measure a 256-Member re-key against the 5 s target, confirm no `crypto-bigint` code is reachable in the built WASM (accepted risk RUSTSEC-2026-0387, `docs/accepted-risks.md`), and record the result in `specs/001-secure-realtime-chat/research.md` (fallback: mls-rs)
+- [X] T014 Run spike T-spike-1: build OpenMLS to WASM, run it in Chrome, Safari, Firefox and Edge, measure a 256-Member re-key against the 5 s target, confirm no `crypto-bigint` code is reachable in the built WASM (accepted risk RUSTSEC-2026-0387, `docs/accepted-risks.md`), and record the result in `specs/001-secure-realtime-chat/research.md` (fallback: mls-rs)
 - [ ] T015 [P] Write JSON Schemas with strict size limits for every message in `contracts/` into `contracts-schema/*.json`
 - [ ] T016 [P] Write the server-adversary harness in `server/tests/adversary.rs`: dump all tables, blobs, logs and metrics during end-to-end flows and fail on plaintext or key material (must fail until features exist)
 - [ ] T017 [P] Write schema-validation security tests (oversized, unknown-field and malformed inputs) in `server/tests/validation.rs`
@@ -76,7 +76,7 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 
 ### Crypto and client foundation
 
-- [ ] T030 Write tests then implement the OpenMLS wrapper (create group, add, remove, commit, encrypt, decrypt) with fixed-bucket padding in `crypto-wasm/src/lib.rs` and `crypto-wasm/src/padding.rs` (tests in `crypto-wasm/tests/` first)
+- [ ] T030 Write tests then implement the OpenMLS wrapper (create group, add, remove, commit, encrypt, decrypt) with fixed-bucket padding, accepting only the one configured ciphersuite and rejecting all others with a test (accepted risk RUSTSEC-2026-0387) in `crypto-wasm/src/lib.rs` and `crypto-wasm/src/padding.rs` (tests in `crypto-wasm/tests/` first)
 - [ ] T031 [P] Add cargo-fuzz targets for MLS message handling and padding in `crypto-wasm/fuzz/`
 - [ ] T032 [P] Add cargo-fuzz targets for the HTTP request, WebSocket frame and schema-validation parsers in `server/fuzz/`
 - [ ] T033 [P] Add the typed crypto bridge in `web/src/crypto/bridge.ts` and the libsodium helpers (Argon2id, XChaCha20-Poly1305) in `web/src/crypto/sodium.ts`

@@ -1,0 +1,15 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>OpenMLS WASM spike</title>
+<pre id="out">running</pre>
+<script type="module">
+  import init, { run_rekey } from './pkg/openmls_wasm_spike.js';
+  try {
+    await init();
+    const results = [];
+    for (const n of [8, 64, 256]) results.push(JSON.parse(run_rekey(n)));
+    document.getElementById('out').textContent = JSON.stringify({ ok: true, results });
+  } catch (e) {
+    document.getElementById('out').textContent = JSON.stringify({ ok: false, error: String(e) });
+  }
+</script>
