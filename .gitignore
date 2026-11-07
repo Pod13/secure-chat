@@ -1,0 +1,59 @@
+# Secrets and key material (Constitution IX: never in code, config or images)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+secrets/
+signing-keys/
+
+# Rust (server/, crypto-wasm/)
+target/
+**/*.rs.bk
+fuzz/artifacts/
+fuzz/corpus/
+mutants.out*/
+
+# WebAssembly build output
+crypto-wasm/pkg/
+
+# Node (web/)
+node_modules/
+web/dist/
+web/.vite/
+*.tsbuildinfo
+.npm/
+
+# Tests, coverage and mutation testing
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+.stryker-tmp/
+reports/mutation/
+
+# Build and release output (reproducible builds are produced by CI)
+build/out/
+*.sbom.json
+
+# Logs and local databases
+*.log
+logs/
+*.sqlite
+*.sqlite3
+*.db
+pgdata/
+
+# Local tooling and editor state
+.claude/settings.local.json
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
