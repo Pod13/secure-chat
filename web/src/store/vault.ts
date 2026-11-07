@@ -3,7 +3,7 @@
 // are replaced by keyed hashes so storage shows neither content nor names. Everything here is
 // pure logic over the injected sodium helpers and key-value store.
 
-import { DEFAULT_KDF, type CryptoError, type KdfParams, type Sodium } from '../crypto/sodium';
+import { DEFAULT_KDF, type KdfParams, type Sodium } from '../crypto/sodium';
 import type { KeyValueStore } from '../ports';
 
 export const MIN_PASSCODE_LENGTH = 10;
@@ -13,8 +13,6 @@ const RECORD_PREFIX = 'r:';
 const VERSION = 1;
 const SALT_BYTES = 16;
 const HEADER_BYTES = 1 + 4 + 4 + SALT_BYTES;
-/** The smallest wrapped key: a 24-byte nonce and a 16-byte tag around the key bytes. */
-const MIN_META_BYTES = HEADER_BYTES + 24 + 16;
 /** Settings read back from storage above these are treated as damage, not honoured. */
 const MAX_OPSLIMIT = 20;
 const MAX_MEMLIMIT = 1024 * 1024 * 1024;
@@ -58,10 +56,10 @@ export function costIsSane(kdf: KdfParams): boolean {
 }
 
 function parseHeader(meta: Uint8Array): { kdf: KdfParams; salt: Uint8Array } {
-  if (meta.length < MIN_META_BYTES || meta[0] !== VERSION) throw new VaultError('corrupt');
+  if (meta[0] !== VERSION) throw new RangeError();
   const view = new DataView(meta.buffer, meta.byteOffset, meta.byteLength);
   const kdf = { opslimit: view.getUint32(1), memlimit: view.getUint32(5) };
-  if (!costIsSane(kdf)) throw new VaultError('corrupt');
+  if (!costIsSane(kdf)) throw new RangeError();
   return { kdf, salt: meta.slice(9, HEADER_BYTES) };
 }
 
@@ -140,8 +138,8 @@ export async function createVault(deps: VaultDeps, passcode: string): Promise<Va
 export async function unlockVault(deps: VaultDeps, passcode: string): Promise<Vault> {
   const meta = await deps.store.get(META_KEY);
   if (meta === undefined) throw new VaultError('no_vault');
-  const { kdf, salt } = parseHeader(meta);
   try {
+    const { kdf, salt } = parseHeader(meta);
     const wrapKey = deps.sodium.deriveKey(passcode, salt, kdf);
     const dataKey = deps.sodium.open(
       wrapKey,
@@ -150,9 +148,9 @@ export async function unlockVault(deps: VaultDeps, passcode: string): Promise<Va
     );
     return new Vault(deps, dataKey);
   } catch (error) {
-    // Only `CryptoError` can come from the helpers: a bad passcode fails to decrypt; anything
-    // else (weak cost, bad salt) means the stored header is damaged.
-    const wrong = (error as CryptoError).code === 'decrypt_failed';
+    // Only a failed decryption means a wrong passcode. A short or odd header, weak cost or bad
+    // salt all mean the stored header is damaged.
+    const wrong = (error as { code?: string }).code === 'decrypt_failed';
     throw new VaultError(wrong ? 'wrong_passcode' : 'corrupt');
   }
 }

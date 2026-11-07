@@ -1,8 +1,19 @@
 {
   "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
   "testRunner": "vitest",
-  "mutate": ["src/crypto/**/*.ts", "src/store/**/*.ts", "src/sw/**/*.ts", "!src/**/*.d.ts"],
-  "thresholds": { "high": 95, "low": 90, "break": 85 },
+  "mutate": [
+    "src/crypto/**/*.ts",
+    "src/store/**/*.ts",
+    "src/sw/**/*.ts",
+    "src/net/**/*.ts",
+    "!src/**/*.d.ts"
+  ],
+  "thresholds": {
+    "high": 95,
+    "low": 90,
+    "break": 85
+  },
   "reporters": ["clear-text", "progress"],
-  "tempDirName": ".stryker-tmp"
+  "tempDirName": ".stryker-tmp",
+  "inPlace": true
 }

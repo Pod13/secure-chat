@@ -38,7 +38,7 @@
     {
       "type": "envelope",
       "envelope_id": "AAAAAAAAAAAAAAAAAAAAAA",
-      "ciphertext": "A",
+      "ciphertext": "AQID",
       "enqueued_at": 0
     }
   ]

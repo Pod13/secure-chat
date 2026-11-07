@@ -10,7 +10,7 @@ A real-time chat where the server can never read your messages. The web app inst
 | Phase | Tasks done | Status |
 |-------|-----------:|--------|
 | Phase 1: Setup (Shared Infrastructure) | 11 / 12 | in progress |
-| Phase 2: Foundational (Blocking Prerequisites) | 21 / 32 | in progress |
+| Phase 2: Foundational (Blocking Prerequisites) | 22 / 32 | in progress |
 | Phase 3: User Story 1 - Create an account and start a private 1:1 chat | 0 / 22 | not started |
 | Phase 4: User Story 2 - Verify a contact's identity | 0 / 7 | not started |
 | Phase 5: User Story 3 - Install on Android and iPhone | 0 / 8 | not started |
@@ -22,7 +22,7 @@ A real-time chat where the server can never read your messages. The web app inst
 | Phase 11: User Story 9 - Block, report and control privacy signals | 0 / 7 | not started |
 | Phase 12: User Story 10 - Recover an account after losing every device | 0 / 10 | not started |
 | Phase 13: Polish and Cross-Cutting Concerns | 0 / 13 | not started |
-| **Total** | **32 / 156 (20%)** | |
+| **Total** | **33 / 156 (21%)** | |
 <!-- progress:end -->
 
 Details: [specs/001-secure-realtime-chat/tasks.md](specs/001-secure-realtime-chat/tasks.md). Tasks that need people (security-lead sign-off, real-device tests, audits) stay open until a person does them.
