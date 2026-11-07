@@ -51,6 +51,7 @@ async function send(page: Page, text: string): Promise<void> {
 async function makeInviteLink(page: Page): Promise<string> {
   await page.getByRole('link', { name: 'Invite someone' }).click();
   await page.getByRole('button', { name: 'Make an invite link' }).click();
+  await expect(page.getByRole('img', { name: 'QR code for the invite link' })).toBeVisible();
   const link = (await page.getByTestId('invite-link').textContent()) ?? '';
   expect(link).toContain('#/join/');
   return link;
@@ -119,6 +120,7 @@ test.describe('Scenario 1: two people, one encrypted conversation', () => {
     await test.step('Bob is offline, then catches up in order, once', () =>
       offlineCatchUp(alice, bob));
 
+    await alice.page.screenshot({ path: 'test-results/alice-conversation.png' });
     await test.step('the server holds nothing readable', () =>
       expectNothingReadableOnServer([
         'hello Bob',

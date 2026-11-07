@@ -130,7 +130,7 @@ Per plan.md: `server/` (Rust), `crypto-wasm/` (Rust to WASM), `web/` (Vite + Rea
 - [X] T159 [US1] Device login with a signed challenge and the authenticated and anonymous calls conversations need, in `web/src/net/api.ts` (found missing while implementing T061)
 - [X] T160 [US1] Classify incoming envelopes (Welcome or group message, and which group) before decrypting, in `crypto-wasm/src/lib.rs` and `web/src/crypto/bridge.ts` (found missing while implementing T061)
 - [X] T161 [US1] Conversation history and message status store (sealed in the vault) in `web/src/store/history.ts`; Messenger with encrypted outbox, per-conversation ordering and delivery receipts in `web/src/net/delivery.ts`
-- [ ] T060 [US1] Build Invite creation, sharing and QR code in `web/src/app/screens/Invite.tsx`
+- [X] T060 [US1] Build Invite creation, sharing and QR code in `web/src/app/screens/Invite.tsx`
 - [X] T061 [US1] Implement joining by Invite and starting a 1:1 Conversation in `web/src/app/screens/JoinInvite.tsx` and `web/src/crypto/conversation.ts`
 - [X] T062 [US1] Build the conversation view with text sending, receive, and status (sending, sent, delivered) in `web/src/app/screens/Conversation.tsx`
 - [X] T063 [US1] Implement replies, reactions and edits as encrypted application messages in `web/src/crypto/messagetypes.ts` and render them in `web/src/app/screens/Conversation.tsx` (FR-013)

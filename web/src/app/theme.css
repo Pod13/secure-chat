@@ -115,3 +115,87 @@ main,
     transition: none !important;
   }
 }
+
+/* Screens added for conversations. */
+.recovery-key,
+.invite-link {
+  font-family: ui-monospace, monospace;
+  word-break: break-all;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+
+.recovery-key {
+  font-size: 1.25rem;
+  letter-spacing: 0.05em;
+}
+
+.qr {
+  width: min(16rem, 100%);
+  height: auto;
+  border: 1px solid var(--border);
+}
+
+.check {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 1rem 0;
+}
+
+.conversations,
+.messages {
+  list-style: none;
+  padding: 0;
+}
+
+.message {
+  max-width: 85%;
+  margin: 0.5rem 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+}
+
+.message.mine {
+  margin-left: auto;
+  border-color: var(--accent);
+}
+
+.message p {
+  margin: 0.25rem 0;
+  overflow-wrap: anywhere;
+}
+
+.message blockquote {
+  margin: 0 0 0.25rem;
+  padding-left: 0.5rem;
+  border-left: 3px solid var(--border);
+  color: var(--muted);
+}
+
+.message-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.message-actions button {
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+}
+
+.status {
+  color: var(--muted);
+}
+
+.composer {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.composer textarea {
+  font: inherit;
+  padding: 0.5rem;
+}

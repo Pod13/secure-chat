@@ -172,3 +172,23 @@ describe('error messages', () => {
     }
   });
 });
+
+describe('QR code', () => {
+  test('is drawn from shapes, never from an HTML string, and carries a label', async () => {
+    const { QrCode } = await import('../src/app/components/QrCode');
+    const html = renderToString(
+      <QrCode text="https://chat.example/#/join/abc" label="Invite QR" />,
+    );
+    expect(html).toContain('<svg');
+    expect(html).toContain('aria-label="Invite QR"');
+    expect(html.match(/<rect/g)?.length).toBeGreaterThan(100);
+    expect(html).not.toContain('<script');
+  });
+
+  test('different text gives a different picture', async () => {
+    const { QrCode } = await import('../src/app/components/QrCode');
+    const a = renderToString(<QrCode text="one" label="x" />);
+    const b = renderToString(<QrCode text="two" label="x" />);
+    expect(a).not.toBe(b);
+  });
+});

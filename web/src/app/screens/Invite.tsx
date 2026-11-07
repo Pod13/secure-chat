@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Alert } from '../components/Alert';
 import { Button } from '../components/Button';
 import { Layout } from '../components/Layout';
+import { QrCode } from '../components/QrCode';
 import { useController } from '../context';
 import { routeHref } from '../router';
 import { useAction } from '../useAction';
@@ -26,9 +27,12 @@ export function Invite() {
           {busy ? 'Making link…' : 'Make an invite link'}
         </Button>
       ) : (
-        <p className="invite-link" data-testid="invite-link">
-          {link}
-        </p>
+        <>
+          <p className="invite-link" data-testid="invite-link">
+            {link}
+          </p>
+          <QrCode text={link} label="QR code for the invite link" />
+        </>
       )}
       {error ? <Alert urgent>{error}</Alert> : null}
       <p>
